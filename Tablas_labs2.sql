@@ -1,3 +1,6 @@
+-- Habilitar extensión PostGIS
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 -- Crear tabla Usuarios (base común)
 CREATE TABLE Usuarios (
     ID SERIAL PRIMARY KEY,
@@ -13,16 +16,18 @@ CREATE TABLE Usuarios (
 -- Crear tabla Clientes (hereda de Usuarios)
 CREATE TABLE Clientes (
     Usuario_ID INT PRIMARY KEY REFERENCES Usuarios(ID) ON DELETE CASCADE,
-    Direccion VARCHAR(100) NOT NULL
+    Direccion VARCHAR(100) NOT NULL,
+    ubicacion geometry(Point, 4326) -- NUEVO: ubicación geoespacial del cliente
 );
 
 -- Crear tabla Repartidores (hereda de Usuarios con nuevos atributos)
 CREATE TABLE Repartidores (
     Usuario_ID INT PRIMARY KEY REFERENCES Usuarios(ID) ON DELETE CASCADE,
-    Tipo_vehiculo VARCHAR(20) NOT NULL CHECK (Tipo_vehiculo IN ('AUTO', 'MOTO', 'BICICLETA', 'CAMIONETA'))
+    Tipo_vehiculo VARCHAR(20) NOT NULL CHECK (Tipo_vehiculo IN ('AUTO', 'MOTO', 'BICICLETA', 'CAMIONETA')),
+    ubicacion geometry(Point, 4326) -- NUEVO: ubicación geoespacial del repartidor
 );
 
--- Crear tabla Administradores (nueva tabla)
+-- Crear tabla Administradores
 CREATE TABLE Administradores (
     Usuario_ID INT PRIMARY KEY REFERENCES Usuarios(ID) ON DELETE CASCADE,
     Nivel_acceso INT DEFAULT 1,
@@ -39,10 +44,11 @@ CREATE TABLE Medios_de_pago (
 CREATE TABLE Farmacias (
     ID SERIAL PRIMARY KEY,
     Nombre VARCHAR(100),
-    Lugar VARCHAR(100)
+    Lugar VARCHAR(100),
+    ubicacion geometry(Point, 4326) -- NUEVO: ubicación geoespacial de la farmacia
 );
 
--- Crear tabla Pedidos (modificada para usar Usuarios)
+-- Crear tabla Pedidos
 CREATE TABLE Pedidos (
     ID SERIAL PRIMARY KEY,
     Fecha DATE,
@@ -53,7 +59,8 @@ CREATE TABLE Pedidos (
     Cliente_ID INT REFERENCES Usuarios(ID),
     Medio_pago_ID INT REFERENCES Medios_de_pago(ID),
     Farmacia_ID INT REFERENCES Farmacias(ID),
-    Repartidor_ID INT REFERENCES Usuarios(ID)
+    Repartidor_ID INT REFERENCES Usuarios(ID),
+    ruta_estimada geometry(LineString, 4326) -- NUEVO: ruta estimada del pedido
 );
 
 -- Crear tabla Productos
@@ -73,7 +80,7 @@ CREATE TABLE Detalle_de_pedidos (
     Cantidad INT
 );
 
--- Crear tabla Calificaciones (modificada para usar Usuarios)
+-- Crear tabla Calificaciones
 CREATE TABLE Calificaciones (
     ID SERIAL PRIMARY KEY,
     Puntuacion VARCHAR(50),
@@ -82,7 +89,7 @@ CREATE TABLE Calificaciones (
     Repartidor_ID INT REFERENCES Usuarios(ID)
 );
 
--- Crear tabla Pedidos_Repartidores (modificada para usar Usuarios)
+-- Crear tabla Pedidos_Repartidores
 CREATE TABLE Pedidos_Repartidores (
     Pedido_ID INT REFERENCES Pedidos(ID),
     Repartidor_ID INT REFERENCES Usuarios(ID),
@@ -99,7 +106,14 @@ CREATE TABLE Farmacias_Productos (
 -- Crear tabla Notificaciones
 CREATE TABLE Notificaciones (
     id SERIAL PRIMARY KEY,
-    mensaje TEXT,       
-    pedido_id INT,         
-    fecha DATE       
+    mensaje TEXT,
+    pedido_id INT,
+    fecha DATE
+);
+
+-- NUEVO: Tabla Zonas de Cobertura
+CREATE TABLE Zonas_cobertura (
+    ID SERIAL PRIMARY KEY,
+    nombre VARCHAR(100),
+    zona geometry(Polygon, 4326) -- Polígono que representa la zona de cobertura
 );
