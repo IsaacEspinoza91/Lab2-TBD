@@ -48,6 +48,14 @@ CREATE TABLE Farmacias (
     ubicacion geometry(Point, 4326) -- NUEVO: ubicación geoespacial de la farmacia
 );
 
+-- Crear tabla Farmacias
+CREATE TABLE Punto_de_entrega (
+    ID SERIAL PRIMARY KEY,
+    Nombre VARCHAR(100),
+    Farmacia_ID INT REFERENCES Farmacias(ID),
+    ubicacion geometry(Point, 4326) -- NUEVO: ubicación geoespacial del punto de entrega
+);
+
 -- Crear tabla Pedidos
 CREATE TABLE Pedidos (
     ID SERIAL PRIMARY KEY,
