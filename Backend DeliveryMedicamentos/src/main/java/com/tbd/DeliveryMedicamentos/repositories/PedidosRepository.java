@@ -41,25 +41,51 @@ public class PedidosRepository {
 
     public PedidosEntity save(PedidosEntity pedido) {
         try (Connection conn = sql2o.open()) {
-            int id = (Integer) conn.createQuery("INSERT INTO Pedidos(fecha, urgencia, total_pagado, estado_entrega, " +
-                            "fecha_entrega, cliente_id, medio_pago_id, farmacia_id, repartidor_id) " +
-                            "VALUES (:fecha, :urgencia, :totalPagado, :estadoEntrega, :fechaEntrega, " +
-                            ":clienteId, :medioPagoId, :farmaciaId, :repartidorId)", true)
+            System.out.println("Ruta antes de guardar: " + pedido.getRutaEstimada()); // Debugging
+
+            int id = (Integer) conn.createQuery(
+                            "INSERT INTO Pedidos(fecha, urgencia, total_pagado, estado_entrega, fecha_entrega, cliente_id, medio_pago_id, farmacia_id, repartidor_id, ruta_estimada) " +
+                                    "VALUES (:fecha, :urgencia, :total_pagado, :estado_entrega, :fecha_entrega, :cliente_id, :medio_pago_id, :farmacia_id, :repartidor_id, ST_GeomFromText(:ruta_estimada, 4326))", true)
                     .addParameter("fecha", pedido.getFecha())
                     .addParameter("urgencia", pedido.getUrgencia())
-                    .addParameter("totalPagado", pedido.getTotal_pagado())
-                    .addParameter("estadoEntrega", pedido.getEstado_entrega())
-                    .addParameter("fechaEntrega", pedido.getFecha_entrega())
-                    .addParameter("clienteId", pedido.getCliente_id())
-                    .addParameter("medioPagoId", pedido.getMedio_pago_id())
-                    .addParameter("farmaciaId", pedido.getFarmacia_id())
-                    .addParameter("repartidorId", pedido.getRepartidor_id())
+                    .addParameter("total_pagado", pedido.getTotal_pagado())
+                    .addParameter("estado_entrega", pedido.getEstado_entrega())
+                    .addParameter("fecha_entrega", pedido.getFecha_entrega())
+                    .addParameter("cliente_id", pedido.getCliente_id())
+                    .addParameter("medio_pago_id", pedido.getMedio_pago_id())
+                    .addParameter("farmacia_id", pedido.getFarmacia_id())
+                    .addParameter("repartidor_id", pedido.getRepartidor_id())
+                    .addParameter("ruta_estimada", pedido.getRutaEstimada())
                     .executeUpdate()
                     .getKey();
+
             pedido.setId(id);
             return pedido;
         }
     }
+
+    /* Formato de consulta JSON
+    POST http://localhost:8080/api/pedidos
+    {
+    "fecha": "2025-06-10",
+    "urgencia": true,
+    "total_pagado": 20000,
+    "estado_entrega": "En camino",
+    "fecha_entrega": "2025-06-11",
+    "cliente_id": 1,
+    "medio_pago_id": 2,
+    "farmacia_id": 3,
+    "repartidor_id": 4,
+    "coordenadas": [
+        [-33.516000, -70.760000],
+        [-33.530000, -70.780000],
+        [-33.540000, -70.800000],
+        [-33.550000, -70.820000],
+        [-33.560000, -70.840000]
+    ]
+    }
+
+     */
 
     public void registrarPedido(PedidosEntity pedido, List<DetallePedidoDTO> detalles) {
         String sql = "CALL registrar_pedido(" +

@@ -1,10 +1,9 @@
-package com.tbd.DeliveryMedicamentos.entities;
+package com.tbd.DeliveryMedicamentos.DTO;
 
 import java.sql.Date;
 import java.util.List;
 
-public class PedidosEntity {
-    private int id;
+public class PedidosDTO {
     private Date fecha;
     private boolean urgencia;
     private int total_pagado;
@@ -14,29 +13,22 @@ public class PedidosEntity {
     private int medio_pago_id;
     private int farmacia_id;
     private int repartidor_id;
-    private String rutaEstimada; // Almacenar la ruta como WKT (LINESTRING)
+    private List<Double[]> coordenadas; // Lista de puntos [lat, lng]
 
+    public PedidosDTO() {}
 
-    // Constructores
-    public PedidosEntity() {}
-
-    public PedidosEntity(int id, Date fecha, boolean urgencia, int total_pagado, String estado_entrega, Date fecha_entrega, int cliente_id, int medio_pago_id, int farmacia_id, int repartidor_id, String rutaEstimada) {
-        this.id = id;
+    public PedidosDTO(Date fecha, boolean urgencia, int totalPagado, String estadoEntrega, Date fechaEntrega,
+                      int clienteId, int medioPagoId, int farmaciaId, int repartidorId, List<Double[]> coordenadas) {
         this.fecha = fecha;
         this.urgencia = urgencia;
-        this.total_pagado = total_pagado;
-        this.estado_entrega = estado_entrega;
-        this.fecha_entrega = fecha_entrega;
-        this.cliente_id = cliente_id;
-        this.medio_pago_id = medio_pago_id;
-        this.farmacia_id = farmacia_id;
-        this.repartidor_id = repartidor_id;
-        this.rutaEstimada = rutaEstimada;
-    }
-
-    // Getters
-    public int getId() {
-        return id;
+        this.total_pagado = totalPagado;
+        this.estado_entrega = estadoEntrega;
+        this.fecha_entrega = fechaEntrega;
+        this.cliente_id = clienteId;
+        this.medio_pago_id = medioPagoId;
+        this.farmacia_id = farmaciaId;
+        this.repartidor_id = repartidorId;
+        this.coordenadas = coordenadas;
     }
 
     public Date getFecha() {
@@ -75,11 +67,11 @@ public class PedidosEntity {
         return repartidor_id;
     }
 
-    // Setters
-    public void setId(int id) {
-        this.id = id;
+    public List<Double[]> getCoordenadas() {
+        return coordenadas;
     }
 
+    //Setter
     public void setFecha(Date fecha) {
         this.fecha = fecha;
     }
@@ -116,13 +108,7 @@ public class PedidosEntity {
         this.repartidor_id = repartidor_id;
     }
 
-    public void setRutaEstimada(String rutaEstimada) {
-        this.rutaEstimada = rutaEstimada;
+    public void setCoordenadas(List<Double[]> coordenadas) {
+        this.coordenadas = coordenadas;
     }
-
-    public String getRutaEstimada() {
-        return rutaEstimada;
-    }
-
-
 }

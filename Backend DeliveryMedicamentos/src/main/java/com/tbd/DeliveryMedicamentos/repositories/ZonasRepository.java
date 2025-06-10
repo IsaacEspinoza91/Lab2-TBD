@@ -50,6 +50,14 @@ public class ZonasRepository {
         }
     }
 
+    /*Formato
+    POST http://localhost:8080/api/zonas
+    {
+  "nombre": "Zona PRUEBA",
+  "geom": "POLYGON((-70.6506 -33.4372, -70.6510 -33.4375, -70.6490 -33.4382, -70.6506 -33.4372))"
+    }
+     */
+
     public boolean update(int id, ZonasEntity zona) {
         String sql = "UPDATE zonas SET nombre = :nombre, geom = ST_GeomFromText(:geom, 4326) WHERE id = :id";
         try (Connection conn = sql2o.open()) {

@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.controllers;
 
+import com.tbd.DeliveryMedicamentos.DTO.FarmaciaDTO;
 import com.tbd.DeliveryMedicamentos.entities.FarmaciasEntity;
 import com.tbd.DeliveryMedicamentos.services.FarmaciasService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +41,11 @@ public class FarmaciasController {
     }
 
     @PostMapping
-    public ResponseEntity<FarmaciasEntity> createFarmacia(@RequestBody FarmaciasEntity farmacia) {
-        FarmaciasEntity nuevaFarmacia = farmaciaService.createFarmacia(farmacia);
+    public ResponseEntity<FarmaciasEntity> createFarmacia(@RequestBody FarmaciaDTO farmaciaDTO) {
+        FarmaciasEntity farmacia = new FarmaciasEntity();
+        farmacia.setNombre(farmaciaDTO.getNombre());
+        farmacia.setLugar(farmaciaDTO.getLugar());
+        FarmaciasEntity nuevaFarmacia = farmaciaService.createFarmacia(farmacia, farmaciaDTO.getLatitud(), farmaciaDTO.getLongitud());
         return new ResponseEntity<>(nuevaFarmacia, HttpStatus.CREATED);
     }
 

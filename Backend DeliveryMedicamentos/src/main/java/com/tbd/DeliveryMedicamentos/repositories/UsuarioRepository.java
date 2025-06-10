@@ -59,6 +59,21 @@ public class UsuarioRepository {
         }
     }
 
+    /*Formato
+    POST http://localhost:8080/api/auth/register
+    {
+    "rut": "91839492-2",
+    "nombre": "Pose",
+    "apellido": "Pérez",
+    "email": "Pu4nKi@example.com",
+    "telefono": "+56934542311",
+    "password": "Usachito2025TDB",
+    "tipo": "CLIENTE",
+    "lat": -33.734539,
+    "lng": -70.860034
+    }
+     */
+
     public void update(UsuarioEntity usuario) {
         try (Connection conn = sql2o.open()) {
             conn.createQuery("UPDATE Usuarios SET rut = :rut, nombre = :nombre, apellido = :apellido, " +

@@ -1,6 +1,7 @@
 package com.tbd.DeliveryMedicamentos.services;
 
 import com.tbd.DeliveryMedicamentos.DTO.DetallePedidoDTO;
+import com.tbd.DeliveryMedicamentos.DTO.PedidosDTO;
 import com.tbd.DeliveryMedicamentos.DTO.ResumenPedidoClienteDTO;
 import com.tbd.DeliveryMedicamentos.entities.PedidosEntity;
 import com.tbd.DeliveryMedicamentos.repositories.PedidosRepository;
@@ -25,8 +26,40 @@ public class PedidosService {
         return pedidoRepository.findById(id);
     }
 
-    public PedidosEntity createPedido(PedidosEntity pedido) {
+    public PedidosEntity createPedido(PedidosDTO pedidoDTO) {
+        String rutaEstimada = convertToLineString(pedidoDTO.getCoordenadas()); // Convertir coordenadas a LINESTRING
+
+        PedidosEntity pedido = new PedidosEntity(
+                0, // ID se generará en DB
+                pedidoDTO.getFecha(),
+                pedidoDTO.getUrgencia(),
+                pedidoDTO.getTotal_pagado(),
+                pedidoDTO.getEstado_entrega(),
+                pedidoDTO.getFecha_entrega(),
+                pedidoDTO.getCliente_id(),
+                pedidoDTO.getMedio_pago_id(),
+                pedidoDTO.getFarmacia_id(),
+                pedidoDTO.getRepartidor_id(),
+                rutaEstimada
+        );
+
+        pedido.setRutaEstimada(rutaEstimada); // Setear la ruta
         return pedidoRepository.save(pedido);
+    }
+
+    // Método para convertir lista de coordenadas en LINESTRING
+    private String convertToLineString(List<Double[]> coordenadas) {
+        if (coordenadas == null || coordenadas.isEmpty()) {
+            return null;
+        }
+
+        StringBuilder linea = new StringBuilder("LINESTRING(");
+        for (Double[] punto : coordenadas) {
+            linea.append(punto[1]).append(" ").append(punto[0]).append(","); // lng lat (PostGIS usa X,Y)
+        }
+        linea.deleteCharAt(linea.length() - 1); // Remover última coma
+        linea.append(")");
+        return linea.toString();
     }
 
     public void registrarPedido(PedidosEntity pedido, List<DetallePedidoDTO> detalles) {

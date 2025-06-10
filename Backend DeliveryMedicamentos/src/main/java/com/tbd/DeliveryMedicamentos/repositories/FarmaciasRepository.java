@@ -34,11 +34,13 @@ public class FarmaciasRepository {
         }
     }
 
-    public FarmaciasEntity save(FarmaciasEntity farmacia) {
+    public FarmaciasEntity save(FarmaciasEntity farmacia, Double lat, Double lgn) {
         try (Connection conn = sql2o.open()) {
-            int id = (Integer) conn.createQuery("INSERT INTO Farmacias(nombre, lugar) VALUES (:nombre, :lugar)", true)
+            farmacia.setGeom(lat, lgn);
+            int id = (Integer) conn.createQuery("INSERT INTO Farmacias(nombre, lugar, geom) VALUES (:nombre, :lugar, ST_GeomFromText(:geom, 4326))", true)
                     .addParameter("nombre", farmacia.getNombre())
                     .addParameter("lugar", farmacia.getLugar())
+                    .addParameter("geom", farmacia.getGeom())
                     .executeUpdate()
                     .getKey();
 
@@ -46,6 +48,16 @@ public class FarmaciasRepository {
             return farmacia;
         }
     }
+
+    /* Formato
+    POST http://localhost:8080/api/farmacias
+    {
+    "nombre": "Farmacia Central",
+    "lugar": "Santiago",
+    "latitud": -33.734539,
+    "longitud": -70.860034
+    }
+     */
 
     public void update(FarmaciasEntity farmacia) {
         try (Connection conn = sql2o.open()) {

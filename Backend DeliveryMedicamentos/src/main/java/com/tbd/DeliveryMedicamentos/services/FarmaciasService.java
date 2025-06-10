@@ -25,8 +25,8 @@ public class FarmaciasService {
         return farmaciaRepository.findById(id);
     }
 
-    public FarmaciasEntity createFarmacia(FarmaciasEntity farmacia) {
-        return farmaciaRepository.save(farmacia);
+    public FarmaciasEntity createFarmacia(FarmaciasEntity farmacia, Double Latitude, Double Longitude) {
+        return farmaciaRepository.save(farmacia, Latitude, Longitude);
     }
 
     public FarmaciasEntity updateFarmacia(FarmaciasEntity farmacia) {

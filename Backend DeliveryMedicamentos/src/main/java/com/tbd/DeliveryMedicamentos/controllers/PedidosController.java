@@ -1,6 +1,7 @@
 package com.tbd.DeliveryMedicamentos.controllers;
 
 import com.tbd.DeliveryMedicamentos.DTO.PedidoConDetallesDTO;
+import com.tbd.DeliveryMedicamentos.DTO.PedidosDTO;
 import com.tbd.DeliveryMedicamentos.DTO.ResumenPedidoClienteDTO;
 import com.tbd.DeliveryMedicamentos.entities.PedidosEntity;
 import com.tbd.DeliveryMedicamentos.services.PedidosService;
@@ -46,7 +47,7 @@ public class PedidosController {
     }
 
     @PostMapping
-    public ResponseEntity<PedidosEntity> createPedido(@RequestBody PedidosEntity pedido) {
+    public ResponseEntity<PedidosEntity> createPedido(@RequestBody PedidosDTO pedido) {
         PedidosEntity nuevoPedido = pedidoService.createPedido(pedido);
         return new ResponseEntity<>(nuevoPedido, HttpStatus.CREATED);
     }
