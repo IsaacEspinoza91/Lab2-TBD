@@ -10,21 +10,20 @@ CREATE TABLE Usuarios (
     Email VARCHAR(100) UNIQUE NOT NULL,
     Password VARCHAR(100) NOT NULL,
     Telefono VARCHAR(20),
-    Tipo VARCHAR(20) NOT NULL CHECK (Tipo IN ('CLIENTE', 'REPARTIDOR', 'ADMIN'))
+    Tipo VARCHAR(20) NOT NULL CHECK (Tipo IN ('CLIENTE', 'REPARTIDOR', 'ADMIN')),
+    geom geometry(Point, 4326) -- NUEVO: ubicación geoespacial del repartidor
 );
 
 -- Crear tabla Clientes (hereda de Usuarios)
 CREATE TABLE Clientes (
     Usuario_ID INT PRIMARY KEY REFERENCES Usuarios(ID) ON DELETE CASCADE,
-    Direccion VARCHAR(100) NOT NULL,
-    ubicacion geometry(Point, 4326) -- NUEVO: ubicación geoespacial del cliente
+    Direccion VARCHAR(100) NOT NULL
 );
 
 -- Crear tabla Repartidores (hereda de Usuarios con nuevos atributos)
 CREATE TABLE Repartidores (
     Usuario_ID INT PRIMARY KEY REFERENCES Usuarios(ID) ON DELETE CASCADE,
     Tipo_vehiculo VARCHAR(20) NOT NULL CHECK (Tipo_vehiculo IN ('AUTO', 'MOTO', 'BICICLETA', 'CAMIONETA')),
-    ubicacion geometry(Point, 4326) -- NUEVO: ubicación geoespacial del repartidor
 );
 
 -- Crear tabla Administradores
@@ -48,7 +47,7 @@ CREATE TABLE Farmacias (
     ubicacion geometry(Point, 4326) -- NUEVO: ubicación geoespacial de la farmacia
 );
 
--- Crear tabla Farmacias
+-- Crear tabla De puntos de entrega de farmacias
 CREATE TABLE Punto_de_entrega (
     ID SERIAL PRIMARY KEY,
     Nombre VARCHAR(100),
@@ -123,5 +122,5 @@ CREATE TABLE Notificaciones (
 CREATE TABLE Zonas_cobertura (
     ID SERIAL PRIMARY KEY,
     nombre VARCHAR(100),
-    zona geometry(Polygon, 4326) -- Polígono que representa la zona de cobertura
+    geom geometry(Polygon, 4326) -- Polígono que representa la zona de cobertura
 );

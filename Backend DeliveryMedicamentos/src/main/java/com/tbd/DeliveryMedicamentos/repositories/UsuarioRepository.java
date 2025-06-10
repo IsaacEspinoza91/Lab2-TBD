@@ -42,8 +42,8 @@ public class UsuarioRepository {
 
     public UsuarioEntity save(UsuarioEntity usuario) {
         try (Connection conn = sql2o.open()) {
-            int id = (Integer) conn.createQuery("INSERT INTO Usuarios(rut, nombre, apellido, email, password, telefono, tipo) " +
-                            "VALUES (:rut, :nombre, :apellido, :email, :password, :telefono, :tipo)", true)
+            int id = (Integer) conn.createQuery("INSERT INTO Usuarios(rut, nombre, apellido, email, password, telefono, tipo, geom) " +
+                            "VALUES (:rut, :nombre, :apellido, :email, :password, :telefono, :tipo, ST_GeomFromText(:geom, 4326))", true)
                     .addParameter("rut", usuario.getRut())
                     .addParameter("nombre", usuario.getNombre())
                     .addParameter("apellido", usuario.getApellido())
@@ -51,6 +51,7 @@ public class UsuarioRepository {
                     .addParameter("password", usuario.getPassword())
                     .addParameter("telefono", usuario.getTelefono())
                     .addParameter("tipo", usuario.getTipo())
+                    .addParameter("geom", usuario.getGeom())
                     .executeUpdate()
                     .getKey();
             usuario.setId(id);

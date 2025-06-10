@@ -9,12 +9,12 @@ public class UsuarioEntity {
     private String password;
     private String telefono;
     private String tipo; // CLIENTE, REPARTIDOR, ADMIN
+    private String geom;
 
     // Constructores
     public UsuarioEntity() {}
 
-    public UsuarioEntity(int id, String rut, String nombre, String apellido, String email,
-                         String password, String telefono, String tipo) {
+    public UsuarioEntity(int id, String rut, String nombre, String apellido, String email, String password, String telefono, String tipo, String geom) {
         this.id = id;
         this.rut = rut;
         this.nombre = nombre;
@@ -23,6 +23,7 @@ public class UsuarioEntity {
         this.password = password;
         this.telefono = telefono;
         this.tipo = tipo;
+        this.geom = geom;
     }
 
     // Getters y Setters
@@ -90,12 +91,13 @@ public class UsuarioEntity {
         this.tipo = tipo;
     }
 
+    public String getGeom() {
+        return geom;
+    }
 
-
-
-
-
-
+    public void setGeom(String geom) {
+        this.geom = geom;
+    }
 
     // Construccion del builder
     public static UsuarioBuilder builder() {
@@ -111,6 +113,7 @@ public class UsuarioEntity {
         private String password;
         private String telefono;
         private String tipo;
+        private String geom;
 
         public UsuarioBuilder id(int id) {
             this.id = id;
@@ -151,6 +154,11 @@ public class UsuarioEntity {
             return this;
         }
 
+        public UsuarioBuilder geom(String geom) {
+            this.geom = geom;
+            return this;
+        }
+
 
         public UsuarioEntity build() {
             UsuarioEntity usuario = new UsuarioEntity();
@@ -162,6 +170,7 @@ public class UsuarioEntity {
             usuario.setPassword(password);
             usuario.setTelefono(telefono);
             usuario.setTipo(tipo);
+            usuario.setGeom(geom);
             return usuario;
         }
     }

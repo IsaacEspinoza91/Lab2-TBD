@@ -34,11 +34,17 @@ public class RepartidorRepository {
     }
 
     public RepartidorEntity save(RepartidorEntity repartidor) {
+        String sql = "INSERT INTO Repartidores(usuario_id, tipo_vehiculo) VALUES (:usuarioId, :tipoVehiculo) RETURNING usuario_id";
+        System.out.println("Datos enviados: usuario_id = " + repartidor.getUsuario_id() + ", tipo_vehiculo = " + repartidor.getTipo_vehiculo());
+
         try (Connection conn = sql2o.open()) {
-            conn.createQuery("INSERT INTO Repartidores(usuario_id, tipo_vehiculo) VALUES (:usuarioId, :tipoVehiculo)")
+            int usuarioId = (Integer) conn.createQuery(sql, true) // 'true' para permitir claves generadas
                     .addParameter("usuarioId", repartidor.getUsuario_id())
                     .addParameter("tipoVehiculo", repartidor.getTipo_vehiculo())
-                    .executeUpdate();
+                    .executeUpdate()
+                    .getKey(); // Obtiene el usuario_id generado
+
+            repartidor.setUsuario_id(usuarioId); // Guarda el usuario_id en el objeto antes de retornarlo
             return repartidor;
         }
     }
