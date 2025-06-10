@@ -14,7 +14,7 @@ public class UsuarioEntity {
     // Constructores
     public UsuarioEntity() {}
 
-    public UsuarioEntity(int id, String rut, String nombre, String apellido, String email, String password, String telefono, String tipo, String geom) {
+    public UsuarioEntity(int id, String rut, String nombre, String apellido, String email, String password, String telefono, String tipo, Double latitud, Double longitud) {
         this.id = id;
         this.rut = rut;
         this.nombre = nombre;
@@ -23,7 +23,7 @@ public class UsuarioEntity {
         this.password = password;
         this.telefono = telefono;
         this.tipo = tipo;
-        this.geom = geom;
+        setGeom(latitud, longitud);
     }
 
     // Getters y Setters
@@ -95,83 +95,11 @@ public class UsuarioEntity {
         return geom;
     }
 
-    public void setGeom(String geom) {
-        this.geom = geom;
-    }
-
-    // Construccion del builder
-    public static UsuarioBuilder builder() {
-        return new UsuarioBuilder();
-    }
-
-    public static class UsuarioBuilder {
-        private int id;
-        private String rut;
-        private String nombre;
-        private String apellido;
-        private String email;
-        private String password;
-        private String telefono;
-        private String tipo;
-        private String geom;
-
-        public UsuarioBuilder id(int id) {
-            this.id = id;
-            return this;
-        }
-
-        public UsuarioBuilder rut(String rut) {
-            this.rut = rut;
-            return this;
-        }
-
-        public UsuarioBuilder nombre(String nombre) {
-            this.nombre = nombre;
-            return this;
-        }
-
-        public UsuarioBuilder apellido(String apellido) {
-            this.apellido = apellido;
-            return this;
-        }
-
-        public UsuarioBuilder email(String email) {
-            this.email = email;
-            return this;
-        }
-
-        public UsuarioBuilder password(String password) {
-            this.password = password;
-            return this;
-        }
-        public UsuarioBuilder telefono(String telefono) {
-            this.telefono = telefono;
-            return this;
-        }
-
-        public UsuarioBuilder tipo(String tipo) {
-            this.tipo = tipo;
-            return this;
-        }
-
-        public UsuarioBuilder geom(String geom) {
-            this.geom = geom;
-            return this;
-        }
-
-
-        public UsuarioEntity build() {
-            UsuarioEntity usuario = new UsuarioEntity();
-            usuario.setId(id);
-            usuario.setRut(rut);
-            usuario.setNombre(nombre);
-            usuario.setApellido(apellido);
-            usuario.setEmail(email);
-            usuario.setPassword(password);
-            usuario.setTelefono(telefono);
-            usuario.setTipo(tipo);
-            usuario.setGeom(geom);
-            return usuario;
+    // Crear ubicacion segun latitud y longitud
+    public void setGeom(Double latitud, Double longitud) {
+        if (latitud != null && longitud != null) {
+            // PostGIS usa orden X,Y (lng,lat). Ademas se reemplazan las comas por puntos para el formato
+            this.geom = String.format("POINT(%f %f)", longitud, latitud).replace(",", ".");
         }
     }
 

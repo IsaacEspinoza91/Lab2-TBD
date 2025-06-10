@@ -34,11 +34,14 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         UsuarioEntity usuario = new UsuarioEntity();
+        usuario.setRut(request.getRut());
         usuario.setNombre(request.getNombre());
         usuario.setApellido(request.getApellido());
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuario.setTelefono(request.getTelefono());
         usuario.setTipo(request.getTipo());
+        usuario.setGeom(request.getLat(), request.getLng());
 
         usuarioRepository.save(usuario);
 

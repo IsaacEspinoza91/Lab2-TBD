@@ -23,7 +23,7 @@ CREATE TABLE Clientes (
 -- Crear tabla Repartidores (hereda de Usuarios con nuevos atributos)
 CREATE TABLE Repartidores (
     Usuario_ID INT PRIMARY KEY REFERENCES Usuarios(ID) ON DELETE CASCADE,
-    Tipo_vehiculo VARCHAR(20) NOT NULL CHECK (Tipo_vehiculo IN ('AUTO', 'MOTO', 'BICICLETA', 'CAMIONETA')),
+    Tipo_vehiculo VARCHAR(20) NOT NULL CHECK (Tipo_vehiculo IN ('AUTO', 'MOTO', 'BICICLETA', 'CAMIONETA'))
 );
 
 -- Crear tabla Administradores
