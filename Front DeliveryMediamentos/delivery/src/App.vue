@@ -1,10 +1,12 @@
 <template>
   <router-view />
+  <AppFooter />
 </template>
 
 <script setup>
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import AppFooter from '/src/components/AppFooter.vue'
 
 const authStore = useAuthStore()
 authStore.initialize()
@@ -18,6 +20,9 @@ const logout = () => {
 </script>
 
 <style>
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   text-align: center;

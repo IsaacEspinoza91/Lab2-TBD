@@ -17,6 +17,11 @@ const PedidosView = () => import('@/views/admin/PedidosView.vue')
 const ProductosView = () => import('@/views/admin/ProductosView.vue')
 const CalificacionesView = () => import('@/views/admin/CalificacionesView.vue')
 
+//vistas usando login de control 2
+const HomeView2 = () => import('@/views/HomeView2.vue')
+const LoginView2 = () => import('@/views/Auth/LoginView.vue')
+const RegisterView2 = () => import('@/views/Auth/RegisterView.vue')
+
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
@@ -34,6 +39,21 @@ const router = createRouter({
             path: '/register',
             name: 'register',
             component: RegisterView
+        },
+        {
+            path: '/home2',
+            name: 'home2',
+            component: HomeView2
+        },
+        {
+            path: '/login2',
+            name: 'login2',
+            component: LoginView2
+        },
+        {
+            path: '/register2',
+            name: 'register2',
+            component: RegisterView2
         },
         {
             path: '/admin',
