@@ -20,7 +20,8 @@ import LoginForm from '../../components/Auth/LoginForm.vue'
 
 <style scoped>
 .page-content {
-    background-image: url('../../assets/fondo-login.png');
+    background-image: url('../../assets/background-home.jpg');
+    background-size: cover;
     flex: 1;
     display: flex;
     flex-direction: column;

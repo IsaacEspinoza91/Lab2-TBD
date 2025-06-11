@@ -8,8 +8,8 @@
                     :class="{ active: currentIndex === index }" :style="{ backgroundImage: `url(${image})` }">
 
                     <div class="welcome-text" :class="{ 'initial-animation': shouldAnimate }">
-                        <h1 class="welcome-title">Bienvenido al Gestor de Tareas</h1>
-                        <p class="welcome-subtitle">Administra tus tareas diarias</p>
+                        <h1 class="welcome-title">Bienvenido al Sistema de Gestión</h1>
+                        <p class="welcome-subtitle">Delivery de Medicamentos</p>
                     </div>
                 </div>
             </div>
@@ -26,22 +26,22 @@
         <div class="info-container">
             <div class="info-content">
                 <div class="info-text">
-                    <h2>Sistema para gestión de tareas</h2>
+                    <h2>Sistema delivery medicamentos</h2>
                     <p>
-                        Permite a los usuarios crear, editar, eliminar y realizar un seguimiento
-                        completo de sus tareas pendientes.
+                        Permite a los usuarios administradores realizar un seguimiento
+                        completo de sus el delivery de medicamentos de diferentes farmacias.
                     </p>
                     <ul class="features-list">
                         <li><i class="bi bi-check-circle"></i> Filtro y búsqueda</li>
                         <li><i class="bi bi-check-circle"></i> Organización</li>
-                        <li><i class="bi bi-check-circle"></i> Notificaciones de tareas y fechas</li>
-                        <li><i class="bi bi-check-circle"></i> Panel central de tareas</li>
-                        <li><i class="bi bi-check-circle"></i> Historial de tareas</li>
-                        <li><i class="bi bi-check-circle"></i> Tareas asociadas a sectores geográficos</li>
+                        <li><i class="bi bi-check-circle"></i> Noti</li>
+                        <li><i class="bi bi-check-circle"></i> Panel central</li>
+                        <li><i class="bi bi-check-circle"></i> Historial</li>
+                        <li><i class="bi bi-check-circle"></i> Asociación a sectores geográficos</li>
                     </ul>
                 </div>
                 <div class="info-image">
-                    <img src="../assets/check-list.png" alt="Gestión de tareas" class="feature-img">
+                    <img src="../assets/shipped.png" alt="Gestión de tareas" class="feature-img">
                 </div>
             </div>
         </div>
@@ -54,9 +54,9 @@ import MainNavBar from '../components/NavBars/MainNavBar.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '../stores/auth2'
 
-import carousel1 from '../assets/to-do1.webp'
-import carousel2 from '../assets/to-do2.webp'
-import carousel3 from '../assets/to-do3.jpeg'
+import carousel1 from '../assets/to-do1.png'
+import carousel2 from '../assets/to-do2.png'
+import carousel3 from '../assets/to-do3.jpg'
 import carousel4 from '../assets/to-do4.jpg'
 
 
@@ -65,7 +65,7 @@ export default {
     setup() {
         const authStore = useAuthStore()
 
-        const images = [carousel1, carousel2, carousel3, carousel4]
+        const images = [carousel3, carousel1, carousel4, carousel2]
         const currentIndex = ref(0)
         const shouldAnimate = ref(true)
         let interval = null
