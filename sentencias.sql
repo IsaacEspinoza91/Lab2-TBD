@@ -450,6 +450,28 @@ FROM Farmacias f JOIN Punto_de_entrega p ON p.farmacia_id = f.id
 ORDER BY f.id, ST_DistanceSphere(f.geom, p.geom) DESC;  -- ordenamiento segun distancia mas lejana
 
 
+-- 6. (Bastian) Determinar los clientes que estan a mas de 5km de cualquier empresa o farmacia. ?Empresa?
+-- Selecciona todos los campos de la tabla 'usuarios' (u)
+SELECT u.*
+FROM usuarios u
+
+-- Filtra sólo aquellos usuarios que son clientes, haciendo un JOIN con la tabla 'clientes'
+         JOIN clientes c ON u.id = c.usuario_id
+
+-- Se aplica un filtro con WHERE para encontrar solo a los clientes
+-- que NO están dentro de 5km de ninguna farmacia.
+WHERE NOT EXISTS (
+    -- Subconsulta que busca farmacias que estén a 5km o menos del cliente
+    SELECT 1
+    FROM farmacias f
+    WHERE ST_DWithin(
+                  u.geom::geography,  -- Convertimos la geometría del cliente a tipo 'geography' para medir en metros
+                  f.geom::geography,  -- Convertimos también la geometría de la farmacia
+                  5000                -- Distancia en metros: 5000m = 5km
+          )
+);
+
+
 
 
 
