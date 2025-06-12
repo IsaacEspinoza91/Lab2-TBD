@@ -47,7 +47,7 @@ public class AuthService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
         String jwtToken = jwtService.generateToken(userDetails);
-        return new AuthResponse(jwtToken);
+        return new AuthResponse(jwtToken, usuario.getTipo(), usuario.getNombre(), usuario.getId());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -60,6 +60,7 @@ public class AuthService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String jwtToken = jwtService.generateToken(userDetails);
-        return new AuthResponse(jwtToken);
+        UsuarioEntity usuario = usuarioRepository.findByEmail(request.getEmail());
+        return new AuthResponse(jwtToken, usuario.getTipo(), usuario.getNombre(), usuario.getId());
     }
 }
