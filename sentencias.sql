@@ -393,3 +393,45 @@ GROUP BY
 ORDER BY 
     veces_cancelado DESC
 LIMIT 10;
+
+
+
+
+
+
+--Sentecias LAB 2
+-- 1. (Isaac) Encontrar los 5 puntos de entrega más cercanos a una farmacia o empresa asociada.
+SELECT 
+    f.ID AS farmacia_id,
+    f.Nombre AS farmacia_nombre,
+    p.ID AS punto_entrega_id,
+    p.Nombre AS punto_entrega_nombre,
+    ST_DistanceSphere(f.geom, p.geom) AS distancia_metros
+FROM Farmacias f
+JOIN LATERAL (		-- Join lateral permite acceder a columnas de tabla farmacia (para calcular distancia)
+    SELECT p.*
+    FROM Punto_de_entrega p
+    ORDER BY ST_DistanceSphere(f.geom, p.geom)
+    LIMIT 5
+) p ON true			-- Como no hay condicion de JOIN, usa un valor true
+ORDER BY f.ID, distancia_metros;	-- ordenamiento segun distancia cercana
+
+
+
+
+
+
+-- 4. (Isaac) Identificar el punto de entrega más lejano desde cada empresa asociada.
+SELECT DISTINCT ON (f.id) 			-- selecciona solo la primera fila de cada columna f.id (ya tiene orden decreciente)
+    f.id AS farmacia_id,
+    f.Nombre AS farmacia_nombre,
+    p.id AS punto_entrega_id,
+    p.Nombre AS punto_entrega_nombre,
+    ST_DistanceSphere(f.geom, p.geom) AS distancia_metros   -- calculo distancia entre los dos puntos en metros
+FROM Farmacias f JOIN Punto_de_entrega p ON p.farmacia_id = f.id
+ORDER BY f.id, ST_DistanceSphere(f.geom, p.geom) DESC;  -- ordenamiento segun distancia mas lejana
+
+
+
+
+
