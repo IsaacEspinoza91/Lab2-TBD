@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.controllers;
 
+import com.tbd.DeliveryMedicamentos.DTO.RepartidorDistanciaMensualDTO;
 import com.tbd.DeliveryMedicamentos.DTO.RepartidorRankingDTO;
 import com.tbd.DeliveryMedicamentos.entities.RepartidorEntity;
 import com.tbd.DeliveryMedicamentos.services.RepartidorService;
@@ -60,5 +61,10 @@ public class RepartidorController {
     public ResponseEntity<Void> deleteRepartidor(@PathVariable int usuarioId) {
         repartidorService.deleteRepartidor(usuarioId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/distancia-mensual")
+    public List<RepartidorDistanciaMensualDTO> getDistanciaMensual() {
+        return repartidorService.obtenerReporteDistanciaMensual();
     }
 }

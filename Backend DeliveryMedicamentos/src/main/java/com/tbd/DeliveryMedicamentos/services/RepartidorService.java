@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.services;
 
+import com.tbd.DeliveryMedicamentos.DTO.RepartidorDistanciaMensualDTO;
 import com.tbd.DeliveryMedicamentos.DTO.RepartidorRankingDTO;
 import com.tbd.DeliveryMedicamentos.entities.RepartidorEntity;
 import com.tbd.DeliveryMedicamentos.repositories.RepartidorRepository;
@@ -46,5 +47,7 @@ public class RepartidorService {
         return repartidorRepository.obtenerTopRepartidores();
     }
 
-
+    public List<RepartidorDistanciaMensualDTO> obtenerReporteDistanciaMensual() {
+        return repartidorRepository.getDistanciaTotalRecorridaPorMes();
+    }
 }

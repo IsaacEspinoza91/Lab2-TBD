@@ -418,6 +418,24 @@ ORDER BY f.ID, distancia_metros;	-- ordenamiento segun distancia cercana
 
 
 
+-- 3. (Emir) Calcular la distancia total recorrida por un repartidor en el último mes.
+SELECT
+    U.Nombre AS Repartidor_Nombre,
+    U.Apellido AS Repartidor_Apellido,
+    TO_CHAR(P.fecha_entrega, 'YYYY-MM') AS Mes_Entrega,
+    SUM(ST_Length(P.ruta_estimada::geography, true)) AS Distancia_Total_Metros
+FROM
+    Pedidos P
+JOIN
+    Usuarios U ON P.Repartidor_ID = U.ID
+WHERE
+    P.estado_entrega = 'Entregado'
+    AND P.fecha_entrega IS NOT NULL
+    AND P.ruta_estimada IS NOT NULL
+GROUP BY
+    U.ID, U.Nombre, U.Apellido, Mes_Entrega
+ORDER BY
+    Repartidor_Nombre, Repartidor_Apellido, Mes_Entrega DESC;
 
 
 

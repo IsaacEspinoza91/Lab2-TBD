@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.repositories;
 
+import com.tbd.DeliveryMedicamentos.DTO.RepartidorDistanciaMensualDTO;
 import com.tbd.DeliveryMedicamentos.DTO.RepartidorRankingDTO;
 import com.tbd.DeliveryMedicamentos.entities.RepartidorEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,31 @@ public class RepartidorRepository {
             return con.createQuery(sql)
                     .executeAndFetchTable()
                     .asList();
+        }
+    }
+
+    public List<RepartidorDistanciaMensualDTO> getDistanciaTotalRecorridaPorMes() {
+        String sql = "SELECT " +
+                "    U.Nombre AS Repartidor_Nombre, " +
+                "    U.Apellido AS Repartidor_Apellido, " +
+                "    TO_CHAR(P.fecha_entrega, 'YYYY-MM') AS Mes_Entrega, " +
+                "    SUM(ST_Length(P.ruta_estimada::geography, true)) AS Distancia_Total_Metros " +
+                "FROM " +
+                "    Pedidos P " +
+                "JOIN " +
+                "    Usuarios U ON P.Repartidor_ID = U.ID " +
+                "WHERE " +
+                "    P.estado_entrega = 'Entregado' " +
+                "    AND P.fecha_entrega IS NOT NULL " +
+                "    AND P.ruta_estimada IS NOT NULL " +
+                "GROUP BY " +
+                "    U.ID, U.Nombre, U.Apellido, Mes_Entrega " +
+                "ORDER BY " +
+                "    Repartidor_Nombre, Repartidor_Apellido, Mes_Entrega DESC;";
+
+        try (Connection con = sql2o.open()) {
+            return con.createQuery(sql)
+                    .executeAndFetch(RepartidorDistanciaMensualDTO.class);
         }
     }
 
