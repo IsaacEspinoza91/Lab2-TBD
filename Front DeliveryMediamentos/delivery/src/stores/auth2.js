@@ -3,69 +3,149 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'
 
-export const useAuthStore = defineStore('auth', () => {
+export const useAuthStore = defineStore('auth2', () => {
     const router = useRouter()
     const token = ref(localStorage.getItem('token') || null)
-    const user = ref(JSON.parse(localStorage.getItem('user')) || null)
+    const user = ref(JSON.parse(localStorage.getItem('user')) || {
+        email: null,
+        tipoUsuario: null,
+        nombreUsuario: null,
+        idUsuario: null
+    })
 
     const isAuthenticated = computed(() => !!token.value)
     const userRole = computed(() => user.value?.tipoUsuario || null)
     const userId = computed(() => user.value?.idUsuario || null)
+    const userName = computed(() => user.value?.nombreUsuario || null)
+
 
     async function login(credentials) {
         try {
-            const { data } = await api.post('/auth/login', credentials)
+            const response = await api.post('/auth/login', credentials)
 
-            token.value = data.token
-            user.value = {
-                emailOrNick: credentials.emailOrNick,
-                tipoUsuario: data.tipoUsuario,
-                nombreUsuario: data.nombreUsuario,
-                idUsuario: data.idUsuario
+            if (!response.data) {
+                throw new Error('No se recibieron datos del servidor')
             }
 
-            localStorage.setItem('token', data.token)
+            // Actualizar estado local
+            token.value = response.data.token
+            user.value = {
+                email: credentials.email,
+                tipoUsuario: response.data.tipoUsuario,
+                nombreUsuario: response.data.nombreUsuario,
+                idUsuario: response.data.idUsuario
+            }
+
+            // Persistir en localStorage
+            localStorage.setItem('token', response.data.token)
             localStorage.setItem('user', JSON.stringify(user.value))
 
-            redirectAfterLogin(data.tipoUsuario)
+            // Redirigir según el rol
+            redirectAfterLogin(response.data.tipoUsuario)
+
             return { success: true }
         } catch (error) {
-            console.error('Login error:', error)
-            throw new Error(error.response?.data?.message || 'Credenciales inválidas')
+            console.error('Error en login:', error)
+            let errorMessage = 'Error al iniciar sesión'
+
+            if (error.response) {
+                // El servidor respondió con un código de error
+                errorMessage = error.response.data?.message ||
+                    error.response.statusText ||
+                    'Credenciales inválidas'
+            } else if (error.request) {
+                // La petición fue hecha pero no hubo respuesta
+                errorMessage = 'No se recibió respuesta del servidor'
+            }
+
+            throw new Error(errorMessage)
         }
     }
 
     async function register(userData) {
         try {
-            const { data } = await api.post('/auth/register', userData)
+            // Preparar los datos para enviar al backend
+            const registrationData = {
+                rut: userData.rut,
+                nombre: userData.nombre,
+                apellido: userData.apellido,
+                email: userData.email,
+                password: userData.password,
+                telefono: userData.telefono || '', // Agrega campo teléfono si es necesario
+                tipo: userData.tipo.toUpperCase(), // Asegurar mayúsculas
+                lat: userData.lat,
+                lng: userData.lng
+            };
 
-            // Solo retornamos éxito sin hacer login automático
+            const response = await api.post('/auth/register', registrationData);
+
+            if (!response.data) {
+                throw new Error('No se recibieron datos del servidor');
+            }
+
+            // await login({ email: userData.email, password: userData.password }); // en caso de auto login despues del registro
+
             return {
                 success: true,
-                message: 'Usuario registrado correctamente. Por favor inicia sesión.'
-            }
+                message: 'Registro exitoso. Por favor inicia sesión.'
+            };
         } catch (error) {
-            console.error('Register error:', error)
-            const message = error.response?.data?.message || 'Error en el registro'
-            return { success: false, message }
+            console.error('Error en registro:', error);
+            let errorMessage = 'Error en el registro';
+
+            if (error.response) {
+                errorMessage = error.response.data?.message ||
+                    error.response.statusText ||
+                    'Error al registrar usuario';
+            } else if (error.request) {
+                errorMessage = 'No se recibió respuesta del servidor';
+            }
+
+            return {
+                success: false,
+                message: errorMessage
+            };
         }
     }
 
     function redirectAfterLogin(role) {
-        if (role === 'admin') {
-            router.push('/admin')
-        } else if (role === 'cliente') {
-            router.push('/client')
+        // Normalizar el rol a mayúsculas para evitar problemas
+        const normalizedRole = role?.toUpperCase()
+
+        switch (normalizedRole) {
+            case 'ADMIN':
+                router.push('/admin')
+                break
+            case 'CLIENTE':
+                router.push('/client')
+                break
+            default:
+                router.push('/home2')
         }
     }
 
     function logout() {
         token.value = null
-        user.value = null
+        user.value = {
+            email: null,
+            tipoUsuario: null,
+            nombreUsuario: null,
+            idUsuario: null
+        }
         localStorage.removeItem('token')
         localStorage.removeItem('user')
         router.push('/home2')
     }
 
-    return { token, user, isAuthenticated, userRole, userId, login, register, logout }
+    return {
+        token,
+        user,
+        isAuthenticated,
+        userRole,
+        userId,
+        userName,
+        login,
+        logout,
+        register
+    }
 })

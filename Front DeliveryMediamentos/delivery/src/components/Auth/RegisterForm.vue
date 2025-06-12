@@ -10,21 +10,12 @@
 
             <form @submit.prevent="handleSubmit" class="register-form">
                 <div class="form-group">
-                    <label for="nick" class="form-label">
-                        <i class="bi bi-person-badge me-2"></i>
-                        Nombre de Usuario
-                    </label>
-                    <input type="text" class="form-control" id="nick" v-model="nick"
-                        placeholder="Elija un nombre de usuario" required>
-                </div>
-
-                <div class="form-group">
                     <label for="rut" class="form-label">
                         <i class="bi bi-card-text me-2"></i>
                         RUT
                     </label>
-                    <input type="text" class="form-control" id="rut" v-model="rut" placeholder="Ej: 12345678-9"
-                        required>
+                    <input type="text" class="form-control" id="rut" v-model="rut" 
+                        placeholder="Ej: 12345678-9" required>
                 </div>
 
                 <div class="form-group">
@@ -32,8 +23,8 @@
                         <i class="bi bi-person me-2"></i>
                         Nombre
                     </label>
-                    <input type="text" class="form-control" id="nombre" v-model="nombre" placeholder="Ingrese su nombre"
-                        required>
+                    <input type="text" class="form-control" id="nombre" v-model="nombre" 
+                        placeholder="Ingrese su nombre" required>
                 </div>
 
                 <div class="form-group">
@@ -50,8 +41,8 @@
                         <i class="bi bi-envelope me-2"></i>
                         Email
                     </label>
-                    <input type="email" class="form-control" id="email" v-model="email" placeholder="Ingrese su email"
-                        required>
+                    <input type="email" class="form-control" id="email" v-model="email" 
+                        placeholder="Ingrese su email" required>
                 </div>
 
                 <div class="form-group">
@@ -60,7 +51,16 @@
                         Contraseña
                     </label>
                     <input type="password" class="form-control" id="password" v-model="password"
-                        placeholder="Cree una contraseña" required>
+                        placeholder="Cree una contraseña (mínimo 4 caracteres)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono" class="form-label">
+                        <i class="bi bi-telephone me-2"></i>
+                        Teléfono
+                    </label>
+                    <input type="tel" class="form-control" id="telefono" v-model="telefono"
+                        placeholder="+56912345678" required>
                 </div>
 
                 <div class="form-group">
@@ -69,11 +69,10 @@
                         Tipo de Usuario
                     </label>
                     <select class="form-select" id="tipo" v-model="tipo" required>
-                        <option value="cliente">Cliente</option>
-                        <option value="admin">Administrador</option>
+                        <option value="CLIENTE">Cliente</option>
+                        <option value="ADMIN">Administrador</option>
                     </select>
                 </div>
-
 
                 <div class="form-group">
                     <label class="form-label">
@@ -88,15 +87,15 @@
                         :center="mapCenter"
                         @click="onMapClick"
                     >
-
                         <l-tile-layer
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
                         <l-marker :lat-lng="ubicacion" v-if="ubicacion" />
                     </l-map>
-                    <small v-if="ubicacion">Lat: {{ ubicacion.lat }}, Lng: {{ ubicacion.lng }}</small>
+                    <small v-if="ubicacion" class="text-muted">
+                        Ubicación seleccionada: Lat: {{ ubicacion.lat }}, Lng: {{ ubicacion.lng }}
+                    </small>
                 </div>
-
 
                 <button type="submit" class="btn btn-primary register-btn" :disabled="loading">
                     <i class="bi bi-person-plus me-2"></i>
@@ -105,7 +104,10 @@
                 </button>
             </form>
 
-            <div v-if="message" class="alert mt-3" :class="{ 'alert-success': success, 'alert-danger': !success }">
+            <div v-if="message" class="alert mt-3" :class="{ 
+                'alert-success': success, 
+                'alert-danger': !success 
+            }">
                 {{ message }}
             </div>
 
@@ -124,8 +126,7 @@ import "leaflet/dist/leaflet.css"
 import "../utils/leaflet-config" 
 import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet"
 import { useAuthStore } from '../../stores/auth2'
-import { ref } from 'vue'
-import { onMounted, nextTick } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 export default {
@@ -138,19 +139,23 @@ export default {
         const authStore = useAuthStore()
         const router = useRouter()
 
+        // Datos del formulario
         const rut = ref('')
         const nombre = ref('')
         const apellido = ref('')
         const email = ref('')
         const password = ref('')
-        const nick = ref('')
-        const tipo = ref('cliente')
-        const mapCenter = ref({ lat: -33.450469, lng: -70.680136 }) // USACH por defecto
+        const telefono = ref('')
+        const tipo = ref('CLIENTE')
+        const mapCenter = ref({ lat: -33.450469, lng: -70.680136 })
         const ubicacion = ref(null)
+        
+        // Estado del formulario
         const loading = ref(false)
         const message = ref('')
         const success = ref(false)
 
+        // Manejadores
         const onMapClick = (e) => {
             ubicacion.value = {
                 lat: parseFloat(e.latlng.lat.toFixed(6)),
@@ -158,6 +163,60 @@ export default {
             }
         }
 
+        const handleSubmit = async () => {
+            try {
+                loading.value = true
+                message.value = ''
+                
+                // Validaciones
+                if (!ubicacion.value) {
+                    throw new Error('Debe seleccionar una ubicación en el mapa')
+                }
+
+                if (password.value.length < 4) {
+                    throw new Error('La contraseña debe tener al menos 4 caracteres')
+                }
+
+                // Enviar datos al backend
+                const result = await authStore.register({
+                    rut: rut.value,
+                    nombre: nombre.value,
+                    apellido: apellido.value,
+                    email: email.value,
+                    password: password.value,
+                    telefono: telefono.value,
+                    tipo: tipo.value,
+                    lat: ubicacion.value.lat,
+                    lng: ubicacion.value.lng
+                })
+
+                // Manejar respuesta
+                success.value = result.success
+                message.value = result.message
+
+                if (result.success) {
+                    // Limpiar formulario
+                    rut.value = ''
+                    nombre.value = ''
+                    apellido.value = ''
+                    email.value = ''
+                    password.value = ''
+                    telefono.value = ''
+                    ubicacion.value = null
+                    
+                    // Redirigir después de 2 segundos
+                    setTimeout(() => router.push('/login2'), 2000)
+                }
+            } catch (err) {
+                success.value = false
+                message.value = err.message || 'Error en el registro'
+                console.error('Error en registro:', err)
+            } finally {
+                loading.value = false
+            }
+        }
+
+        // Asegurar que el mapa se renderice correctamente
         const mapRef = ref(null)
         onMounted(() => {
             if (mapRef.value?.leafletObject) {
@@ -165,62 +224,15 @@ export default {
             }
         })
 
-
-        const handleSubmit = async () => {
-            try {
-                loading.value = true
-                message.value = ''
-
-                if (!ubicacion.value) {
-                    message.value = 'Debe seleccionar una ubicación en el mapa.'
-                    success.value = false
-                    loading.value = false
-                    return
-                }
-
-                const result = await authStore.register({
-                    rut: rut.value,
-                    nombre: nombre.value,
-                    apellido: apellido.value,
-                    email: email.value,
-                    password: password.value,
-                    nick: nick.value,
-                    tipo: tipo.value,
-                    lat: ubicacion.value.lat,  // Cambiado de ubicacion a lat
-                    lng: ubicacion.value.lng   // Cambiado de ubicacion a lng
-                })
-
-                success.value = result.success
-                message.value = result.message
-
-                if (result.success) {
-                    // Limpiar formulario después de registro exitoso
-                    rut.value = ''
-                    nombre.value = ''
-                    apellido.value = ''
-                    email.value = ''
-                    password.value = ''
-                    nick.value = ''
-                    tipo.value = 'cliente'
-                    ubicacion.value = null
-                }
-            } catch (err) {
-                success.value = false
-                message.value = err.message || 'Error en el registro'
-            } finally {
-                loading.value = false
-            }
-        }
-
         return {
-            rut, nombre, apellido, email, password, nick, tipo,
+            rut, nombre, apellido, email, password, telefono, tipo,
             loading, message, success, handleSubmit,
-            mapCenter, ubicacion, onMapClick
+            mapCenter, ubicacion, onMapClick, mapRef
         }
     }
 }
-
 </script>
+
 
 <style scoped>
 .register-container {

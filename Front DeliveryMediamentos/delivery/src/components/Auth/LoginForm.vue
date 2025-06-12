@@ -10,12 +10,12 @@
 
             <form @submit.prevent="handleSubmit" class="auth-form">
                 <div class="form-group">
-                    <label for="emailOrNick" class="form-label">
-                        <i class="bi bi-person-circle me-2"></i>
-                        Usuario
+                    <label for="email" class="form-label">
+                        <i class="bi bi-envelope me-2"></i>
+                        Email
                     </label>
-                    <input type="text" class="form-control" id="emailOrNick" v-model="emailOrNick"
-                        placeholder="Ingrese su nombre de usuario o email" required>
+                    <input type="email" class="form-control" id="email" v-model="email"
+                        placeholder="Ingrese su email" required>
                 </div>
 
                 <div class="form-group">
@@ -32,6 +32,11 @@
                     <span v-if="loading">Ingresando...</span>
                     <span v-else>Ingresar</span>
                 </button>
+
+                <!-- Mostrar mensaje de error si existe -->
+                <div v-if="error" class="alert alert-danger mt-3">
+                    {{ error }}
+                </div>
             </form>
 
             <div class="auth-footer">
@@ -51,7 +56,7 @@ import { ref } from 'vue'
 export default {
     setup() {
         const authStore = useAuthStore()
-        const emailOrNick = ref('')
+        const email = ref('')
         const password = ref('')
         const loading = ref(false)
         const error = ref('')
@@ -61,17 +66,18 @@ export default {
                 loading.value = true
                 error.value = ''
                 await authStore.login({
-                    emailOrNick: emailOrNick.value,
+                    email: email.value,
                     password: password.value
                 })
             } catch (err) {
-                error.value = err.message
+                error.value = err.message || 'Error al iniciar sesión'
+                console.error('Error en login:', err)
             } finally {
                 loading.value = false
             }
         }
 
-        return { emailOrNick, password, loading, error, handleSubmit }
+        return { email, password, loading, error, handleSubmit }
     }
 }
 </script>
