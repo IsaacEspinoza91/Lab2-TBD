@@ -35,7 +35,7 @@ public class PuntosEntity {
         return idFarmacia;
     }
 
-    public void setLugar(String lugar) {
+    public void setidFarmacia(int idFarmacia) {
         this.idFarmacia = idFarmacia;
     }
 

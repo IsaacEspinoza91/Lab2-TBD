@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.services;
 
+import com.tbd.DeliveryMedicamentos.DTO.PuntoConDistanciaDTO;
 import com.tbd.DeliveryMedicamentos.entities.PuntosEntity;
 import com.tbd.DeliveryMedicamentos.repositories.PuntosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,4 +38,16 @@ public class PuntosService {
     public boolean deletePunto(int id) {
         return puntosRepository.delete(id);
     }
+
+
+    // Metodos sentencias
+    public List<PuntoConDistanciaDTO> obtenerPuntosMasLejanosPorFarmacia() {
+        return puntosRepository.findPuntosMasLejanosPorFarmacia();
+    }
+
+
+    public List<PuntoConDistanciaDTO> obtenerTop5PuntosCercanosPorFarmacia() {
+        return puntosRepository.findTop5PuntosCercanosPorFarmacia();
+    }
+
 }

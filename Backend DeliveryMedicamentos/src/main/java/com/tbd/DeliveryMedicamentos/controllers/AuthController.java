@@ -1,6 +1,5 @@
 package com.tbd.DeliveryMedicamentos.controllers;
 
-import com.tbd.DeliveryMedicamentos.entities.UsuarioEntity;
 import com.tbd.DeliveryMedicamentos.security.AuthResponse;
 import com.tbd.DeliveryMedicamentos.security.LoginRequest;
 import com.tbd.DeliveryMedicamentos.security.RegisterRequest;

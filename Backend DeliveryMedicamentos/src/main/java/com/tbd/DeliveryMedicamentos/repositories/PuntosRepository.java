@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.repositories;
 
+import com.tbd.DeliveryMedicamentos.DTO.PuntoConDistanciaDTO;
 import com.tbd.DeliveryMedicamentos.entities.PuntosEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sql2o.Connection;
@@ -81,6 +82,51 @@ public class PuntosRepository {
                     .executeUpdate()
                     .getResult();
             return result > 0;
+        }
+    }
+
+    // obtener los 5 puntos mas cercanos de cada farmacia
+    public List<PuntoConDistanciaDTO> findTop5PuntosCercanosPorFarmacia() {
+        String sql = """
+        SELECT farmaciaId, farmaciaNombre, puntoEntregaId, puntoEntregaNombre, distanciaMetros
+        FROM (
+            SELECT
+                f.id AS farmaciaId,
+                f.nombre AS farmaciaNombre,
+                p.id AS puntoEntregaId,
+                p.nombre AS puntoEntregaNombre,
+                ST_DistanceSphere(f.geom, p.geom) AS distanciaMetros,
+                ROW_NUMBER() OVER (PARTITION BY f.id ORDER BY ST_DistanceSphere(f.geom, p.geom)) AS rn
+            FROM Farmacias f
+            JOIN Punto_de_entrega p ON p.farmacia_id = f.id
+        ) sub
+        WHERE rn <= 5
+        ORDER BY farmaciaId, distanciaMetros;
+    """;
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .executeAndFetch(PuntoConDistanciaDTO.class);
+        }
+    }
+
+    // Obtener punto mas lejando de cada farmacia
+    public List<PuntoConDistanciaDTO> findPuntosMasLejanosPorFarmacia() {
+        String sql = """
+        SELECT DISTINCT ON (f.id)
+            f.id AS farmaciaId,
+            f.Nombre AS farmaciaNombre,
+            p.id AS puntoEntregaId,
+            p.Nombre AS puntoEntregaNombre,
+            ST_DistanceSphere(f.geom, p.geom) AS distanciaMetros
+        FROM Farmacias f
+        JOIN Punto_de_entrega p ON p.farmacia_id = f.id
+        ORDER BY f.id, ST_DistanceSphere(f.geom, p.geom) DESC; 
+    """;
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .executeAndFetch(PuntoConDistanciaDTO.class);
         }
     }
 }
