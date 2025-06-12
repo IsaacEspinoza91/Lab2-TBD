@@ -83,4 +83,9 @@ public class ClienteController {
         return ResponseEntity.ok(resultado);
     }
 
+    @GetMapping("/lejanos-5km")
+    public List<ClienteDetalladoDTO> getClientesLejanosPor5Km() {
+        return clienteService.getClientesLejanosA5kmDeFarmacia();
+    }
+
 }

@@ -62,4 +62,7 @@ public class UsuarioService {
     public long countUsuarios() {
         return usuarioRepository.count();
     }
+
+
+
 }

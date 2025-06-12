@@ -84,4 +84,8 @@ public class ClienteService {
     public ClienteTopGastoDTO findClienteMayorGasto() {
         return clienteRepository.findClienteMayorGasto();
     }
+
+    public List<ClienteDetalladoDTO> getClientesLejanosA5kmDeFarmacia() {
+        return clienteRepository.findClientesLejanosA5kmDeFarmacia();
+    }
 }

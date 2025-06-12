@@ -4,6 +4,7 @@ import com.tbd.DeliveryMedicamentos.DTO.ClienteDetalladoDTO;
 import com.tbd.DeliveryMedicamentos.DTO.ResumenPedidoClienteDTO;
 import com.tbd.DeliveryMedicamentos.DTO.ClienteTopGastoDTO;
 import com.tbd.DeliveryMedicamentos.entities.ClienteEntity;
+import com.tbd.DeliveryMedicamentos.entities.UsuarioEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -123,4 +124,29 @@ public class ClienteRepository {
         }
     }
 
+    public List<ClienteDetalladoDTO> findClientesLejanosA5kmDeFarmacia() {
+        String sql = """
+            SELECT 
+                u.id AS usuarioId,
+                u.nombre,
+                u.email,
+                c.direccion
+            FROM usuarios u
+            JOIN clientes c ON u.id = c.usuario_id
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM farmacias f
+                WHERE ST_DWithin(
+                    u.geom::geography,
+                    f.geom::geography,
+                    5000
+                )
+            )
+        """;
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .executeAndFetch(ClienteDetalladoDTO.class);
+        }
+    }
 }
