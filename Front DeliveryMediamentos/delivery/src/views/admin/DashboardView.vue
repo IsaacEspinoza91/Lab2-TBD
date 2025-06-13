@@ -45,12 +45,12 @@
       <div class="consulta-selector">
         <select v-model="consultaSeleccionada" @change="ejecutarConsulta" class="consulta-dropdown">
           <option value="" disabled selected>Seleccione una consulta...</option>
-          <option value="1">Consulta N°1</option>
-          <option value="2">Consulta N°2</option>
-          <option value="3">Consulta N°3</option>
-          <option value="4">Consulta N°4</option>
-          <option value="5">Consulta N°5</option>
-          <option value="6">Consulta N°6</option>
+          <option value="1">Consulta N°1: Encontrar los 5 puntos de entrega más cercanos a una farmacia o empresa asociada.</option>
+          <option value="2">Consulta N°2: Determinar si un cliente se encuentra dentro de una zona de cobertura.</option>
+          <option value="3">Consulta N°3: Calcular la distancia total recorrida por un repartidor en el último mes.</option>
+          <option value="4">Consulta N°4: Identificar el punto de entrega más lejano desde cada empresa asociada.</option>
+          <option value="5">Consulta N°5: Listar todos los pedidos cuya ruta estimada cruce más de 2 zonas de reparto.</option>
+          <option value="6">Consulta N°6: Determinar los clientes que están a más de 5km de cualquier empresa o farmacia.</option>
         </select>
 
         <div v-if="consultaCargando" class="loading-indicator">
@@ -60,7 +60,26 @@
 
         <div v-if="resultadoConsulta" class="resultado-consulta">
           <h3>Resultado:</h3>
-          <pre>{{ resultadoConsulta }}</pre>
+          <!-- Display para la consulta 3: Lista de objetos -->
+          <div v-if="consultaSeleccionada === '3'">
+            <table class="resultado-table">
+              <thead>
+                <tr>
+                  <th>Repartidor</th>
+                  <th>Mes</th>
+                  <th>Distancia (Metros)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                  <td>{{ item.repartidor_Nombre }} {{ item.repartidor_Apellido }}</td>
+                  <td>{{ item.mes_Entrega }}</td>
+                  <td>{{ parseFloat(item.distancia_Total_Metros).toFixed(2) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pre v-else>{{ JSON.stringify(resultadoConsulta, null, 2) }}</pre>
         </div>
 
         <div v-if="errorConsulta" class="error-consulta">
@@ -117,17 +136,24 @@ const ejecutarConsulta = async () => {
     resultadoConsulta.value = null
     errorConsulta.value = null
 
-    // Aquí llamamos al endpoint correspondiente según la consulta seleccionada
-    const response = await api.get(`/consultas/consulta-${consultaSeleccionada.value}`)
-    resultadoConsulta.value = response.data
+    let response;
+    //para seleccionar la consulta 3
+    if (consultaSeleccionada.value === '3') {
+      response = await api.get('/repartidores/distancia-mensual');
+    } else {
+      //otras consultas
+      response = await api.get(`/consultas/consulta-${consultaSeleccionada.value}`);
+    }
+
+    resultadoConsulta.value = response.data;
 
   } catch (error) {
-    console.error('Error al ejecutar consulta:', error)
-    errorConsulta.value = error.response?.data?.message || 'Error al ejecutar la consulta'
+    console.error('Error al ejecutar consulta:', error);
+    errorConsulta.value = error.response?.data?.message || 'Error al ejecutar la consulta';
   } finally {
-    consultaCargando.value = false
+    consultaCargando.value = false;
   }
-}
+};
 
 onMounted(() => {
   fetchData()
@@ -217,6 +243,29 @@ onMounted(() => {
   white-space: pre-wrap;
   word-wrap: break-word;
   font-family: monospace;
+}
+
+/* Estilos específicos para la tabla de resultados de consulta */
+.resultado-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.resultado-table th,
+.resultado-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.resultado-table thead th {
+  background-color: #e9e9e9;
+  font-weight: bold;
+}
+
+.resultado-table tbody tr:hover {
+  background-color: #f0f0f0;
 }
 
 .error-consulta {
