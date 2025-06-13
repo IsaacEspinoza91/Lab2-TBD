@@ -22,7 +22,7 @@ import NavBar from '@/components/NavBar.vue'
   background-image: url('/images/background-home.jpg');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
+  background-renopeat: no-repeat;
   background-attachment: fixed;
   position: relative;
 }
