@@ -64,18 +64,39 @@
           <div v-if="consultaSeleccionada === '3'">
             <table class="resultado-table">
               <thead>
-                <tr>
-                  <th>Repartidor</th>
-                  <th>Mes</th>
-                  <th>Distancia (Metros)</th>
-                </tr>
+              <tr>
+                <th>Repartidor</th>
+                <th>Mes</th>
+                <th>Distancia (Metros)</th>
+              </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in resultadoConsulta" :key="index">
-                  <td>{{ item.repartidor_Nombre }} {{ item.repartidor_Apellido }}</td>
-                  <td>{{ item.mes_Entrega }}</td>
-                  <td>{{ parseFloat(item.distancia_Total_Metros).toFixed(2) }}</td>
-                </tr>
+              <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                <td>{{ item.repartidor_Nombre }} {{ item.repartidor_Apellido }}</td>
+                <td>{{ item.mes_Entrega }}</td>
+                <td>{{ parseFloat(item.distancia_Total_Metros).toFixed(2) }}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Display para la consulta 6: Lista de clientes lejanos -->
+          <div v-else-if="consultaSeleccionada === '6'">
+            <table class="resultado-table">
+              <thead>
+              <tr>
+                <th>ID Cliente</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Distancia Mínima (km)</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="(cliente, index) in resultadoConsulta" :key="index">
+                <td>{{ cliente.cliente_id }}</td>
+                <td>{{ cliente.nombre }}</td>
+                <td>{{ cliente.apellido }}</td>
+                <td>{{ parseFloat(cliente.distancia_minima_km).toFixed(2) }}</td>
+              </tr>
               </tbody>
             </table>
           </div>
@@ -137,12 +158,16 @@ const ejecutarConsulta = async () => {
     errorConsulta.value = null
 
     let response;
-    //para seleccionar la consulta 3
-    if (consultaSeleccionada.value === '3') {
-      response = await api.get('/repartidores/distancia-mensual');
-    } else {
-      //otras consultas
-      response = await api.get(`/consultas/consulta-${consultaSeleccionada.value}`);
+
+    switch(consultaSeleccionada.value) {
+      case '3':
+        response = await api.get('/repartidores/distancia-mensual');
+        break;
+      case '6':
+        response = await api.get('/clientes/lejanos-5km');
+        break;
+      default:
+        response = await api.get(`/consultas/consulta-${consultaSeleccionada.value}`);
     }
 
     resultadoConsulta.value = response.data;
