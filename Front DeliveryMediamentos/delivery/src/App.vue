@@ -34,10 +34,16 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Arial', sans-serif;
+  height: 100%;
 }
 
 nav {
-  padding: 30px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+  height: 60px;
 }
 
 nav a {
