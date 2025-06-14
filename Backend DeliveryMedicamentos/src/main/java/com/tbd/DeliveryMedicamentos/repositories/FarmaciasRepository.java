@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.repositories;
 
+import com.tbd.DeliveryMedicamentos.DTO.FarmaciaDTO;
 import com.tbd.DeliveryMedicamentos.entities.FarmaciasEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sql2o.Connection;
@@ -31,6 +32,14 @@ public class FarmaciasRepository {
             return conn.createQuery("SELECT id, nombre, lugar FROM Farmacias WHERE id = :id")
                     .addParameter("id", id)
                     .executeAndFetchFirst(FarmaciasEntity.class);
+        }
+    }
+
+    public FarmaciaDTO findByIdConCoordenadas(Integer id) {
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery("SELECT nombre, lugar, ST_Y(geom) AS latitud, ST_X(geom) AS longitud FROM Farmacias WHERE id = :id")
+                    .addParameter("id",id)
+                    .executeAndFetchFirst(FarmaciaDTO.class);
         }
     }
 

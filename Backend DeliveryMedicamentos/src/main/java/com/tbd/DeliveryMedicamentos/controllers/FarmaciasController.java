@@ -40,6 +40,12 @@ public class FarmaciasController {
         return new ResponseEntity<>(farmacia, HttpStatus.OK);
     }
 
+    @GetMapping("/coordenadas/{id}")
+    public ResponseEntity<FarmaciaDTO> getFarmaciaConCoordenadasById(@PathVariable int id) {
+        FarmaciaDTO farmacia = farmaciaService.getFarmaciaByIdConCoordenadas(id);
+        return new ResponseEntity<>(farmacia, HttpStatus.OK);
+    }
+
     @PostMapping
     public ResponseEntity<FarmaciasEntity> createFarmacia(@RequestBody FarmaciaDTO farmaciaDTO) {
         FarmaciasEntity farmacia = new FarmaciasEntity();
