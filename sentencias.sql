@@ -417,6 +417,12 @@ JOIN LATERAL (		-- Join lateral permite acceder a columnas de tabla farmacia (pa
 ORDER BY f.ID, distancia_metros;	-- ordenamiento segun distancia cercana
 
 
+-- 2. (Williams) Determinar si un cliente se encuentra dentro de una zona de cobertura.
+SELECT z.id, z.nombre, z.geom
+FROM zonas_cobertura z
+JOIN usuarios u ON u.id = 2 -- Reemplaza 2 por el ID del usuario real consultado
+WHERE ST_Intersects(z.geom, u.geom);
+
 
 -- 3. (Emir) Calcular la distancia total recorrida por un repartidor en el último mes.
 SELECT
