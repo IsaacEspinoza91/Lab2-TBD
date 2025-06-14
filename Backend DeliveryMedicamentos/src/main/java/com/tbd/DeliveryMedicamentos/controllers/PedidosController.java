@@ -30,6 +30,15 @@ public class PedidosController {
         return new ResponseEntity<>(pedidos, HttpStatus.OK);
     }
 
+    @GetMapping("/{id}/ruta")
+    public ResponseEntity<String> getRutaEstimada(@PathVariable int id) {
+        String rutaGeoJson = pedidoService.mostrarRuta(id);
+        return rutaGeoJson != null ?
+                ResponseEntity.ok(rutaGeoJson) :
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ruta no encontrada");
+    }
+
+
     @GetMapping("/urgentes/medio-pago-frecuente")
     public ResponseEntity<?> obtenerMedioPagoMasUsadoEnUrgentes() {
         Map<String, Object> resultado = pedidoService.obtenerMedioPagoMasUsadoEnUrgentes();

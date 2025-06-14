@@ -22,6 +22,11 @@ public class PedidosService {
         return pedidoRepository.findAll();
     }
 
+    public String mostrarRuta(int pedidoId) {
+        return pedidoRepository.mostrarRuta(pedidoId);
+    }
+
+
     public PedidosEntity getPedidoById(Integer id) {
         return pedidoRepository.findById(id);
     }
