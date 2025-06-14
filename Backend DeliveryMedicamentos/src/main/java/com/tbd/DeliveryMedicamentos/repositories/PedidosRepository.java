@@ -2,6 +2,7 @@ package com.tbd.DeliveryMedicamentos.repositories;
 
 import com.tbd.DeliveryMedicamentos.DTO.DetallePedidoDTO;
 import com.tbd.DeliveryMedicamentos.DTO.ResumenPedidoClienteDTO;
+import com.tbd.DeliveryMedicamentos.DTO.RutasZonasCruzadasDTO;
 import com.tbd.DeliveryMedicamentos.entities.PedidosEntity;
 import com.tbd.DeliveryMedicamentos.utils.ConverJsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,29 @@ public class PedidosRepository {
         }
     }
 
+    public List<RutasZonasCruzadasDTO> rutasZonasCruzadas() {
+        String sql = """
+        SELECT 
+            p.id AS pedido_id,
+            STRING_AGG(DISTINCT z.nombre, ', ') AS zonas_cruzadas,
+            COUNT(DISTINCT z.id) AS cantidad_zonas
+        FROM pedidos p
+        JOIN zonas_cobertura z ON ST_Intersects(p.ruta_estimada, z.geom)
+        GROUP BY p.id
+        HAVING COUNT(DISTINCT z.id) > 2
+        ORDER BY cantidad_zonas DESC
+        """;
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addColumnMapping("pedido_id", "pedidoId")
+                    .addColumnMapping("zonas_cruzadas", "zonasCruzadas")
+                    .addColumnMapping("cantidad_zonas", "cantidadZonas")
+                    .executeAndFetch(RutasZonasCruzadasDTO.class);
+        }
+    }
+
+
     public String mostrarRuta(int pedidoId) {
         String sql = "SELECT ST_AsGeoJSON(ruta_estimada) FROM Pedidos WHERE ID = :pedidoId";
 
@@ -43,8 +67,6 @@ public class PedidosRepository {
 
     /*FORMATO
     GET http://localhost:8080/api/pedidos/{id}/ruta
-
-
      */
 
     public PedidosEntity findById(Integer id) {

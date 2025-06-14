@@ -3,6 +3,7 @@ package com.tbd.DeliveryMedicamentos.controllers;
 import com.tbd.DeliveryMedicamentos.DTO.PedidoConDetallesDTO;
 import com.tbd.DeliveryMedicamentos.DTO.PedidosDTO;
 import com.tbd.DeliveryMedicamentos.DTO.ResumenPedidoClienteDTO;
+import com.tbd.DeliveryMedicamentos.DTO.RutasZonasCruzadasDTO;
 import com.tbd.DeliveryMedicamentos.entities.PedidosEntity;
 import com.tbd.DeliveryMedicamentos.services.PedidosService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,13 @@ public class PedidosController {
         List<PedidosEntity> pedidos = pedidoService.getAllPedidos();
         return new ResponseEntity<>(pedidos, HttpStatus.OK);
     }
+
+    @GetMapping("/rutas-zonas-cruzadas")
+    public ResponseEntity<List<RutasZonasCruzadasDTO>> getRutasZonasCruzadas() {
+        List<RutasZonasCruzadasDTO> resultado = pedidoService.rutasZonasCruzadas();
+        return new ResponseEntity<>(resultado, HttpStatus.OK);
+    }
+
 
     @GetMapping("/{id}/ruta")
     public ResponseEntity<String> getRutaEstimada(@PathVariable int id) {
