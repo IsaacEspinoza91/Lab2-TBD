@@ -48,7 +48,7 @@
           <option value="1">Consulta N°1: Encontrar los 5 puntos de entrega más cercanos a una farmacia o empresa asociada.</option>
           <option value="2">Consulta N°2: Determinar si un cliente se encuentra dentro de una zona de cobertura.</option>
           <option value="3">Consulta N°3: Calcular la distancia total recorrida por un repartidor en el último mes.</option>
-          <option value="4">Consulta N°4: Identificar el punto de entrega más lejano desde cada empresa asociada.</option>
+          <option value="4">Consulta N°4: Identificar el punto de entrega más lejano desde cada empresa farmacia.</option>
           <option value="5">Consulta N°5: Listar todos los pedidos cuya ruta estimada cruce más de 2 zonas de reparto.</option>
           <option value="6">Consulta N°6: Determinar los clientes que están a más de 5km de cualquier empresa o farmacia.</option>
         </select>
@@ -60,8 +60,43 @@
 
         <div v-if="resultadoConsulta" class="resultado-consulta">
           <h3>Resultado:</h3>
+
+          <!-- Consulta 1: Puntos más cercanos -->
+          <div v-if="consultaSeleccionada === '1'" class="consulta-1-container">
+            <div class="farmacia-group" v-for="(grupo, farmaciaId) in agruparPorFarmacia(resultadoConsulta)" :key="farmaciaId">
+              <div class="farmacia-header">
+                <h4>{{ grupo.farmaciaNombre }}</h4>
+                <span class="badge">{{ grupo.puntos.length }} puntos cercanos</span>
+              </div>
+              
+              <table class="resultado-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40%">Punto de Entrega</th>
+                    <th style="width: 20%">Distancia</th>
+                    <th style="width: 20%">Coordenadas</th>
+                    <th style="width: 20%">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in grupo.puntos" :key="index">
+                    <td>{{ item.puntoEntregaNombre }}</td>
+                    <td>{{ parseFloat(item.distanciaMetros).toFixed(2) }} m</td>
+                    <td>{{ item.latitud.toFixed(4) }}, {{ item.longitud.toFixed(4) }}</td>
+                    <td>
+                      <button @click="abrirMapa(item)" class="map-button">
+                        <i class="fas fa-map-marked-alt"></i> Ver Mapa
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
           <!-- Display para la consulta 3: Lista de objetos -->
-          <div v-if="consultaSeleccionada === '3'">
+          <div v-else-if="consultaSeleccionada === '3'">
             <table class="resultado-table">
               <thead>
               <tr>
@@ -129,6 +164,7 @@
               </tbody>
             </table>
           </div>
+          
           <pre v-else>{{ JSON.stringify(resultadoConsulta, null, 2) }}</pre>
         </div>
 
@@ -142,13 +178,32 @@
     <div v-if="mostrarModal" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Ubicación de {{ puntoSeleccionado.farmaciaNombre }} y {{ puntoSeleccionado.puntoEntregaNombre }}</h3>
+          <h3>
+            {{ puntoSeleccionado.farmaciaCoords?.nombre || 'Farmacia' }} → 
+            {{ puntoSeleccionado.puntoEntregaNombre }}
+          </h3>
           <button @click="cerrarModal" class="close-button">&times;</button>
         </div>
         <div class="modal-body">
-          <div id="map-container" ref="mapContainer"></div>
-          <div class="map-info">
-            <p><strong>Distancia:</strong> {{ parseFloat(puntoSeleccionado.distanciaMetros).toFixed(2) }} metros</p>
+          <div v-if="consultaCargando" class="loading-indicator">
+            <div class="loader"></div>
+            <span>Cargando mapa...</span>
+          </div>
+          <div id="map-container" ref="mapContainer" v-else></div>
+          <div class="map-info" v-if="puntoSeleccionado.farmaciaCoords">
+            <p>
+              <strong>Farmacia:</strong> 
+              {{ puntoSeleccionado.farmaciaCoords.nombre }} - 
+              {{ puntoSeleccionado.farmaciaCoords.direccion }}
+            </p>
+            <p>
+              <strong>Punto de entrega:</strong> 
+              {{ puntoSeleccionado.puntoEntregaNombre }}
+            </p>
+            <p>
+              <strong>Distancia:</strong> 
+              {{ parseFloat(puntoSeleccionado.distanciaMetros).toFixed(2) }} metros
+            </p>
           </div>
         </div>
       </div>
@@ -217,6 +272,9 @@ const ejecutarConsulta = async () => {
     let response;
 
     switch(consultaSeleccionada.value) {
+      case '1':
+        response = await api.get('/puntos/top5-cercanos');
+        break;
       case '3':
         response = await api.get('/repartidores/distancia-mensual');
         break;
@@ -241,70 +299,115 @@ const ejecutarConsulta = async () => {
 };
 
 // Método para abrir el mapa
-const abrirMapa = (punto) => {
-  puntoSeleccionado.value = punto
-  mostrarModal.value = true
-  
-  nextTick(() => {
-    initMap()
-  })
-}
+const abrirMapa = async (punto) => {
+  try {
+    consultaCargando.value = true;
+    puntoSeleccionado.value = punto;
+    
+    // Obtener coordenadas de la farmacia
+    const response = await api.get(`/farmacias/coordenadas/${punto.farmaciaId}`);
+    const farmaciaCoords = {
+      nombre: response.data.nombre,
+      direccion: response.data.lugar,
+      latitud: parseFloat(response.data.latitud),
+      longitud: parseFloat(response.data.longitud)
+    };
+    
+    puntoSeleccionado.value.farmaciaCoords = farmaciaCoords;
+    mostrarModal.value = true;
+    
+    nextTick(() => {
+      initMap();
+    });
+  } catch (error) {
+    console.error('Error al obtener coordenadas de la farmacia:', error);
+    errorConsulta.value = 'No se pudieron cargar las coordenadas de la farmacia';
+  } finally {
+    consultaCargando.value = false;
+  }
+};
 
 // Método para inicializar el mapa
 const initMap = () => {
   if (map) {
-    map.remove()
-    map = null
+    map.remove();
+    map = null;
   }
 
   // Coordenadas centrales (promedio entre farmacia y punto)
-  const centerLat = (parseFloat(puntoSeleccionado.value.latitud) + -33.45) / 2
-  const centerLng = (parseFloat(puntoSeleccionado.value.longitud) + -70.64) / 2
+  const centerLat = (puntoSeleccionado.value.latitud + puntoSeleccionado.value.farmaciaCoords.latitud) / 2;
+  const centerLng = (puntoSeleccionado.value.longitud + puntoSeleccionado.value.farmaciaCoords.longitud) / 2;
 
   // Crear mapa
-  map = L.map('map-container').setView([centerLat, centerLng], 12)
+  map = L.map('map-container').setView([centerLat, centerLng], 13);
 
   // Añadir capa de tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map)
+  }).addTo(map);
 
   // Iconos personalizados
   const farmaciaIcon = L.icon({
     iconUrl: 'https://cdn-icons-png.flaticon.com/512/4474/4474034.png',
     iconSize: [32, 32],
     iconAnchor: [16, 32]
-  })
+  });
 
   const puntoIcon = L.icon({
     iconUrl: 'https://cdn-icons-png.flaticon.com/512/4474/4474051.png',
     iconSize: [32, 32],
     iconAnchor: [16, 32]
-  })
+  });
 
-  // Añadir marcadores
-  farmaciaMarker = L.marker([-33.45, -70.64], { icon: farmaciaIcon })
-    .addTo(map)
-    .bindPopup(`<b>${puntoSeleccionado.value.farmaciaNombre}</b>`)
+  // Añadir marcador de la farmacia
+  farmaciaMarker = L.marker(
+    [puntoSeleccionado.value.farmaciaCoords.latitud, puntoSeleccionado.value.farmaciaCoords.longitud], 
+    { icon: farmaciaIcon }
+  ).addTo(map)
+    .bindPopup(`
+      <b>${puntoSeleccionado.value.farmaciaCoords.nombre}</b><br>
+      ${puntoSeleccionado.value.farmaciaCoords.direccion}
+    `);
 
+  // Añadir marcador del punto de entrega
   puntoMarker = L.marker(
     [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud], 
     { icon: puntoIcon }
   ).addTo(map)
-    .bindPopup(`<b>${puntoSeleccionado.value.puntoEntregaNombre}</b>`)
+    .bindPopup(`
+      <b>${puntoSeleccionado.value.puntoEntregaNombre}</b><br>
+      Distancia: ${parseFloat(puntoSeleccionado.value.distanciaMetros).toFixed(2)} metros
+    `);
 
   // Añadir línea entre los puntos
   line = L.polyline([
-    [-33.45, -70.64],
+    [puntoSeleccionado.value.farmaciaCoords.latitud, puntoSeleccionado.value.farmaciaCoords.longitud],
     [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud]
-  ], { color: 'red' }).addTo(map)
+  ], { 
+    color: '#1a237e',
+    weight: 3,
+    dashArray: '5, 5',
+    opacity: 0.7
+  }).addTo(map);
+
+  // Añadir información de distancia
+  const distanceInfo = L.control({ position: 'bottomright' });
+  distanceInfo.onAdd = () => {
+    const div = L.DomUtil.create('div', 'distance-info');
+    div.innerHTML = `
+      <strong>Distancia:</strong> ${parseFloat(puntoSeleccionado.value.distanciaMetros).toFixed(2)} metros<br>
+      <small>Desde ${puntoSeleccionado.value.farmaciaCoords.nombre}</small>
+    `;
+    return div;
+  };
+  distanceInfo.addTo(map);
 
   // Ajustar el zoom para que ambos marcadores sean visibles
   map.fitBounds([
-    [-33.45, -70.64],
+    [puntoSeleccionado.value.farmaciaCoords.latitud, puntoSeleccionado.value.farmaciaCoords.longitud],
     [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud]
-  ], { padding: [50, 50] })
-}
+  ], { padding: [50, 50] });
+};
 
 // Método para cerrar el modal
 const cerrarModal = () => {
@@ -314,6 +417,30 @@ const cerrarModal = () => {
     map = null
   }
 }
+
+const agruparPorFarmacia = (data) => {
+  const grupos = {};
+  
+  data.forEach(item => {
+    if (!grupos[item.farmaciaId]) {
+      grupos[item.farmaciaId] = {
+        farmaciaNombre: item.farmaciaNombre,
+        puntos: []
+      };
+    }
+    
+    // Solo agregar si no hemos alcanzado el límite de 5 por farmacia
+    if (grupos[item.farmaciaId].puntos.length < 5) {
+      grupos[item.farmaciaId].puntos.push({
+        ...item,
+        latitud: parseFloat(item.latitud),
+        longitud: parseFloat(item.longitud)
+      });
+    }
+  });
+  
+  return grupos;
+};
 
 onMounted(() => {
   fetchData()
@@ -387,11 +514,14 @@ onMounted(() => {
 
 .resultado-consulta {
   margin-top: 1.5rem;
-  padding: 1rem;
+  padding: 1.5rem;
   background-color: #f5f5f5;
-  border-radius: 4px;
-  max-height: 300px;
+  border-radius: 8px;
+  max-height: 80vh;  /* Aumentamos la altura máxima */
+  min-height: 300px; /* Altura mínima para que no se vea muy pequeño */
   overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
 }
 
 .resultado-consulta h3 {
@@ -406,26 +536,43 @@ onMounted(() => {
 }
 
 /* Estilos específicos para la tabla de resultados de consulta */
+/* Estilos consistentes para todas las tablas de resultados */
 .resultado-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  font-size: 0.95rem;
+  margin-top: 1rem;
 }
 
-.resultado-table th,
-.resultado-table td {
-  padding: 8px 12px;
+.resultado-table th {
+  background-color: #f8f9fa;
+  padding: 0.85rem 1rem;
   text-align: left;
+  font-weight: 600;
+  color: #555;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.resultado-table td {
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid #eee;
 }
 
-.resultado-table thead th {
-  background-color: #e9e9e9;
-  font-weight: bold;
-}
-
-.resultado-table tbody tr:hover {
-  background-color: #f0f0f0;
+/* Estilo para el JSON de resultados */
+.resultado-consulta pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .error-consulta {
@@ -457,20 +604,6 @@ onMounted(() => {
   animation: spin 1s linear infinite;
 }
 
-/* Estilos para el botón del mapa */
-.map-button {
-  background-color: #1a237e;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.map-button:hover {
-  background-color: #303f9f;
-}
 
 /* Estilos para el modal */
 .modal-overlay {
@@ -489,9 +622,9 @@ onMounted(() => {
 .modal-content {
   background-color: white;
   border-radius: 8px;
-  width: 80%;
-  max-width: 900px;
-  max-height: 90vh;
+  width: 85%;
+  max-width: 1000px;
+  max-height: 85vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -519,24 +652,221 @@ onMounted(() => {
 }
 
 .modal-body {
-  padding: 1rem;
+  padding: 1.5rem;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 }
 
 #map-container {
-  height: 500px;
+  height: 550px; /* Más alto */
   width: 100%;
-  margin-bottom: 1rem;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #f8f9fa;
+}
+
+#map-container {
+  height: 550px;
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #f8f9fa;
+}
+
+.distance-info {
+  background: white;
+  padding: 0.75rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.distance-info strong {
+  color: #1a237e;
 }
 
 .map-info {
-  padding: 0.5rem;
+  padding: 1rem;
   background-color: #f5f5f5;
+  border-radius: 6px;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.map-info p {
+  margin: 0.5rem 0;
+}
+
+.map-info strong {
+  color: #1a237e;
+  font-weight: 600;
+}
+
+/* Estilos para los grupos de farmacia */
+.farmacia-group {
+  margin-bottom: 2rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #f9f9f9;
+}
+
+.farmacia-group h4 {
+  margin-top: 0;
+  color: #1a237e;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Ajustes para las tablas dentro de los grupos */
+.farmacia-group .resultado-table {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.farmacia-group .resultado-table thead th {
+  background-color: #1a237e;
+}
+
+/* Estilos expandidos para el resultado */
+.expanded-result {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.consulta-1-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 0.5rem; /* Espacio para el scroll */
+}
+
+.farmacia-group {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  border: 1px solid #eaeaea;
+}
+
+.farmacia-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.farmacia-header h4 {
+  margin: 0;
+  color: #1a237e;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.badge {
+  background-color: #1a237e;
+  color: white;
+  padding: 0.35rem 1rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.resultado-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.resultado-table th {
+  background-color: #1a237e;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.resultado-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.resultado-table tr:last-child td {
+  border-bottom: none;
+}
+
+.resultado-table tr:hover {
+  background-color: #dbd8d8;
+}
+
+/* Mejoras para el botón del mapa */
+.map-button {
+  background-color: #1a237e;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.map-button:hover {
+  background-color: #303f9f;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.map-button i {
+  font-size: 0.9em;
+}
+
+/* Barra de scroll personalizada */
+.resultado-consulta::-webkit-scrollbar,
+.consulta-1-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.resultado-consulta::-webkit-scrollbar-track,
+.consulta-1-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
   border-radius: 4px;
+}
+
+.resultado-consulta::-webkit-scrollbar-thumb,
+.consulta-1-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.resultado-consulta::-webkit-scrollbar-thumb:hover,
+.consulta-1-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 @keyframes spin {

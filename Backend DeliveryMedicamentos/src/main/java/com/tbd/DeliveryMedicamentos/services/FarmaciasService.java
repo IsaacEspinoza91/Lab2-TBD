@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.services;
 
+import com.tbd.DeliveryMedicamentos.DTO.FarmaciaDTO;
 import com.tbd.DeliveryMedicamentos.entities.FarmaciasEntity;
 import com.tbd.DeliveryMedicamentos.repositories.FarmaciasRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,10 @@ public class FarmaciasService {
 
     public FarmaciasEntity getFarmaciaById(int id) {
         return farmaciaRepository.findById(id);
+    }
+
+    public FarmaciaDTO getFarmaciaByIdConCoordenadas(int id) {
+        return farmaciaRepository.findByIdConCoordenadas(id);
     }
 
     public FarmaciasEntity createFarmacia(FarmaciasEntity farmacia, Double Latitude, Double Longitude) {

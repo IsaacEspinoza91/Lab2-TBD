@@ -128,8 +128,8 @@ public class PuntosRepository {
                 p.id AS puntoEntregaId,
                 p.nombre AS puntoEntregaNombre,
                 ST_DistanceSphere(f.geom, p.geom) AS distanciaMetros,
-                ST_Y(f.geom) AS latitud,
-                ST_X(f.geom) AS longitud,
+                ST_Y(p.geom) AS latitud,
+                ST_X(p.geom) AS longitud,
                 ROW_NUMBER() OVER (PARTITION BY f.id ORDER BY ST_DistanceSphere(f.geom, p.geom)) AS rn
             FROM Farmacias f
             JOIN Punto_de_entrega p ON p.farmacia_id = f.id
@@ -153,7 +153,7 @@ public class PuntosRepository {
             p.id AS puntoEntregaId,
             p.Nombre AS puntoEntregaNombre,
             ST_DistanceSphere(f.geom, p.geom) AS distanciaMetros,
-            ST_Y(f.geom) AS latitud, ST_X(f.geom) AS longitud 
+            ST_Y(p.geom) AS latitud, ST_X(p.geom) AS longitud 
         FROM Farmacias f
         JOIN Punto_de_entrega p ON p.farmacia_id = f.id
         ORDER BY f.id, ST_DistanceSphere(f.geom, p.geom) DESC; 
