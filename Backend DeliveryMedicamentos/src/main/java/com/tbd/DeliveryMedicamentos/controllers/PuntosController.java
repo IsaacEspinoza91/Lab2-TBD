@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.controllers;
 
+import com.tbd.DeliveryMedicamentos.DTO.PuntoConCoordenadasDTO;
 import com.tbd.DeliveryMedicamentos.DTO.PuntoDTO;
 import com.tbd.DeliveryMedicamentos.DTO.PuntoConDistanciaDTO;
 import com.tbd.DeliveryMedicamentos.entities.PuntosEntity;
@@ -33,9 +34,21 @@ public class PuntosController {
         return puntosService.getAllPuntos();
     }
 
+    @GetMapping("/coordenadas")
+    public List<PuntoConCoordenadasDTO> getAllCoordenadas() {
+        return puntosService.findAllPuntosConCoordenadas();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<PuntosEntity> getById(@PathVariable int id) {
         return puntosService.getPuntoById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/coordenadas/{id}")
+    public ResponseEntity<PuntoConCoordenadasDTO> getPuntoCoordenadasById(@PathVariable int id) {
+        return puntosService.getPuntoConCoordenadasById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

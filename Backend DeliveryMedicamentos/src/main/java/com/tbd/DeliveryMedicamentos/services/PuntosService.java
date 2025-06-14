@@ -1,9 +1,11 @@
 package com.tbd.DeliveryMedicamentos.services;
 
+import com.tbd.DeliveryMedicamentos.DTO.PuntoConCoordenadasDTO;
 import com.tbd.DeliveryMedicamentos.DTO.PuntoConDistanciaDTO;
 import com.tbd.DeliveryMedicamentos.entities.PuntosEntity;
 import com.tbd.DeliveryMedicamentos.repositories.PuntosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,8 +29,16 @@ public class PuntosService {
         return puntosRepository.findAll();
     }
 
+    public List<PuntoConCoordenadasDTO> findAllPuntosConCoordenadas() {
+        return puntosRepository.findAllPuntosConCoordenadas();
+    }
+
     public Optional<PuntosEntity> getPuntoById(int id) {
         return puntosRepository.findById(id);
+    }
+
+    public Optional<PuntoConCoordenadasDTO> getPuntoConCoordenadasById(int id) {
+        return puntosRepository.findPuntoConCoordenadas(id);
     }
 
     public boolean updatePunto(int id, PuntosEntity punto, Double lat, Double lng) {

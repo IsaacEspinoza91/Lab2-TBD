@@ -6,6 +6,8 @@ public class PuntoConDistanciaDTO {
     private int puntoEntregaId;
     private String puntoEntregaNombre;
     private double distanciaMetros;
+    private double latitud;
+    private double longitud;
 
     // Getters y setters
     public int getFarmaciaId() { return farmaciaId; }
@@ -22,4 +24,20 @@ public class PuntoConDistanciaDTO {
 
     public double getDistanciaMetros() { return distanciaMetros; }
     public void setDistanciaMetros(double distanciaMetros) { this.distanciaMetros = distanciaMetros; }
+
+    public double getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(double latitud) {
+        this.latitud = latitud;
+    }
+
+    public double getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(double longitud) {
+        this.longitud = longitud;
+    }
 }
