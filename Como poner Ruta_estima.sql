@@ -13,6 +13,7 @@ CREATE EXTENSION pgrouting;
 
 2. Cargar los datos OSM en la base
 ✅ Importar osm_2po_4pgr.sql (esto contiene la red vial) esta en el WSP.
+Link Descarga: https://drive.google.com/file/d/1HiM09HpVrqF_bcZF4D3BC1_SyRPVzC9t/view?usp=sharing
 
 3. Crear y poblar la tabla de vértices
 ✅ Crear ways_vertices_pgr con pgr_createTopology:
