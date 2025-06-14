@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.repositories;
 
+import com.tbd.DeliveryMedicamentos.DTO.ZonaCoberturaDTO;
 import com.tbd.DeliveryMedicamentos.entities.UsuarioEntity;
 import com.tbd.DeliveryMedicamentos.entities.ZonasEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,9 +108,9 @@ public class UsuarioRepository {
         }
     }
 
-    public List<ZonasEntity> obtenerZonasPorUsuario(int usuarioId) {
+    public List<ZonaCoberturaDTO> obtenerZonasPorUsuario(int usuarioId) {
         String sql = """
-        SELECT z.id, z.nombre, z.geom
+        SELECT u.id,z.id, z.nombre
         FROM zonas_cobertura z
         JOIN usuarios u ON u.id = :usuarioId
         WHERE ST_Intersects(z.geom, u.geom)

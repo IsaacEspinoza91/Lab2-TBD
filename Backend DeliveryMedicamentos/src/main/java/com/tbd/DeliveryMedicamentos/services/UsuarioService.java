@@ -1,6 +1,10 @@
 package com.tbd.DeliveryMedicamentos.services;
 
-import com.tbd.DeliveryMedicamentos.entities.*;
+import com.tbd.DeliveryMedicamentos.DTO.ZonaCoberturaDTO;
+import com.tbd.DeliveryMedicamentos.entities.AdministradorEntity;
+import com.tbd.DeliveryMedicamentos.entities.ClienteEntity;
+import com.tbd.DeliveryMedicamentos.entities.RepartidorEntity;
+import com.tbd.DeliveryMedicamentos.entities.UsuarioEntity;
 import com.tbd.DeliveryMedicamentos.repositories.RepartidorRepository;
 import com.tbd.DeliveryMedicamentos.repositories.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -60,8 +64,8 @@ public class UsuarioService {
         return usuarioRepository.count();
     }
 
-    public List<ZonasEntity> obtenerZonasDeUsuario(int usuarioId) {
-        List<ZonasEntity> zonas = usuarioRepository.obtenerZonasPorUsuario(usuarioId);
+    public List<ZonaCoberturaDTO> obtenerZonasDeUsuario(int usuarioId) {
+        List<ZonaCoberturaDTO> zonas = usuarioRepository.obtenerZonasPorUsuario(usuarioId);
         if (zonas.isEmpty()) {
             throw new IllegalStateException("El usuario no se encuentra en ninguna zona de cobertura.");
         }
