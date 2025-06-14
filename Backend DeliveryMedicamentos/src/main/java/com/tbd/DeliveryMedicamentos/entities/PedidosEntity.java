@@ -14,7 +14,7 @@ public class PedidosEntity {
     private int medio_pago_id;
     private int farmacia_id;
     private int repartidor_id;
-    private String rutaEstimada; // Almacenar la ruta como WKT (LINESTRING)
+    private String ruta_estimada; // Almacenar la ruta como WKT (LINESTRING)
 
 
     // Constructores
@@ -31,7 +31,7 @@ public class PedidosEntity {
         this.medio_pago_id = medio_pago_id;
         this.farmacia_id = farmacia_id;
         this.repartidor_id = repartidor_id;
-        this.rutaEstimada = rutaEstimada;
+        this.ruta_estimada = ruta_estimada;
     }
 
     // Getters
@@ -116,12 +116,12 @@ public class PedidosEntity {
         this.repartidor_id = repartidor_id;
     }
 
-    public void setRutaEstimada(String rutaEstimada) {
-        this.rutaEstimada = rutaEstimada;
+    public void setRutaEstimada(String ruta_estimada) {
+        this.ruta_estimada = ruta_estimada;
     }
 
     public String getRutaEstimada() {
-        return rutaEstimada;
+        return ruta_estimada;
     }
 
 
