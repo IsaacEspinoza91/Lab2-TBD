@@ -141,7 +141,25 @@
             </table>
           </div>
 
-
+          <!-- Display para la consulta 5: Pedidos con rutas que cruzan múltiples zonas -->
+          <div v-else-if="consultaSeleccionada === '5' && resultadoConsulta">
+            <table class="resultado-table">
+              <thead>
+                <tr>
+                  <th>ID Pedido</th>
+                  <th>Zonas Cruzadas</th>
+                  <th>Cantidad de Zonas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(pedido, index) in resultadoConsulta" :key="index">
+                  <td>{{ pedido.pedidoId }}</td>
+                  <td>{{ pedido.zonasCruzadas }}</td>
+                  <td>{{ pedido.cantidadZonas }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           <!-- Display para la consulta 6: Lista de clientes lejanos -->
           <div v-else-if="consultaSeleccionada === '6'">
@@ -218,7 +236,6 @@ import api from '@/api'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
-
 const farmaciasCount = ref(0)
 const usuariosCount = ref(0)
 const productosCount = ref(0)
@@ -237,7 +254,6 @@ let map = null
 let farmaciaMarker = null
 let puntoMarker = null
 let line = null
-
 
 const fetchData = async () => {
   try {
@@ -280,6 +296,9 @@ const ejecutarConsulta = async () => {
         break;
       case '4':
         response = await api.get('/puntos/mas-lejanos');
+        break;
+      case '5':
+        response = await api.get('/pedidos/rutas-zonas-cruzadas');
         break;
       case '6':
         response = await api.get('/clientes/lejanos-5km');
@@ -872,5 +891,36 @@ onMounted(() => {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.resultado-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.resultado-table th, .resultado-table td {
+  border: 1px solid #7c7c7c;
+  padding: 8px;
+  text-align: left;
+}
+
+.resultado-table th {
+  background-color: #202020;
+}
+
+.resultado-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.loading {
+  padding: 20px;
+  text-align: center;
+}
+
+.error {
+  color: red;
+  padding: 20px;
+  text-align: center;
 }
 </style>
