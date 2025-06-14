@@ -79,6 +79,35 @@
               </tbody>
             </table>
           </div>
+
+
+          <div v-else-if="consultaSeleccionada === '4'">
+            <table class="resultado-table">
+              <thead>
+                <tr>
+                  <th>Farmacia</th>
+                  <th>Punto de Entrega</th>
+                  <th>Distancia (metros)</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                  <td>{{ item.farmaciaNombre }}</td>
+                  <td>{{ item.puntoEntregaNombre }}</td>
+                  <td>{{ parseFloat(item.distanciaMetros).toFixed(2) }}</td>
+                  <td>
+                    <button @click="abrirMapa(item)" class="map-button">
+                      Ver Mapa
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+
+
           <!-- Display para la consulta 6: Lista de clientes lejanos -->
           <div v-else-if="consultaSeleccionada === '6'">
             <table class="resultado-table">
@@ -108,12 +137,32 @@
         </div>
       </div>
     </div>
+
+
+    <div v-if="mostrarModal" class="modal-overlay" @click.self="cerrarModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Ubicación de {{ puntoSeleccionado.farmaciaNombre }} y {{ puntoSeleccionado.puntoEntregaNombre }}</h3>
+          <button @click="cerrarModal" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="map-container" ref="mapContainer"></div>
+          <div class="map-info">
+            <p><strong>Distancia:</strong> {{ parseFloat(puntoSeleccionado.distanciaMetros).toFixed(2) }} metros</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import api from '@/api'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
 
 const farmaciasCount = ref(0)
 const usuariosCount = ref(0)
@@ -126,6 +175,14 @@ const consultaSeleccionada = ref('')
 const consultaCargando = ref(false)
 const resultadoConsulta = ref(null)
 const errorConsulta = ref(null)
+
+const mostrarModal = ref(false)
+const puntoSeleccionado = ref(null)
+let map = null
+let farmaciaMarker = null
+let puntoMarker = null
+let line = null
+
 
 const fetchData = async () => {
   try {
@@ -163,6 +220,9 @@ const ejecutarConsulta = async () => {
       case '3':
         response = await api.get('/repartidores/distancia-mensual');
         break;
+      case '4':
+        response = await api.get('/puntos/mas-lejanos');
+        break;
       case '6':
         response = await api.get('/clientes/lejanos-5km');
         break;
@@ -179,6 +239,81 @@ const ejecutarConsulta = async () => {
     consultaCargando.value = false;
   }
 };
+
+// Método para abrir el mapa
+const abrirMapa = (punto) => {
+  puntoSeleccionado.value = punto
+  mostrarModal.value = true
+  
+  nextTick(() => {
+    initMap()
+  })
+}
+
+// Método para inicializar el mapa
+const initMap = () => {
+  if (map) {
+    map.remove()
+    map = null
+  }
+
+  // Coordenadas centrales (promedio entre farmacia y punto)
+  const centerLat = (parseFloat(puntoSeleccionado.value.latitud) + -33.45) / 2
+  const centerLng = (parseFloat(puntoSeleccionado.value.longitud) + -70.64) / 2
+
+  // Crear mapa
+  map = L.map('map-container').setView([centerLat, centerLng], 12)
+
+  // Añadir capa de tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map)
+
+  // Iconos personalizados
+  const farmaciaIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/4474/4474034.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32]
+  })
+
+  const puntoIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/4474/4474051.png',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32]
+  })
+
+  // Añadir marcadores
+  farmaciaMarker = L.marker([-33.45, -70.64], { icon: farmaciaIcon })
+    .addTo(map)
+    .bindPopup(`<b>${puntoSeleccionado.value.farmaciaNombre}</b>`)
+
+  puntoMarker = L.marker(
+    [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud], 
+    { icon: puntoIcon }
+  ).addTo(map)
+    .bindPopup(`<b>${puntoSeleccionado.value.puntoEntregaNombre}</b>`)
+
+  // Añadir línea entre los puntos
+  line = L.polyline([
+    [-33.45, -70.64],
+    [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud]
+  ], { color: 'red' }).addTo(map)
+
+  // Ajustar el zoom para que ambos marcadores sean visibles
+  map.fitBounds([
+    [-33.45, -70.64],
+    [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud]
+  ], { padding: [50, 50] })
+}
+
+// Método para cerrar el modal
+const cerrarModal = () => {
+  mostrarModal.value = false
+  if (map) {
+    map.remove()
+    map = null
+  }
+}
 
 onMounted(() => {
   fetchData()
@@ -320,6 +455,88 @@ onMounted(() => {
   width: 20px;
   height: 20px;
   animation: spin 1s linear infinite;
+}
+
+/* Estilos para el botón del mapa */
+.map-button {
+  background-color: #1a237e;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.map-button:hover {
+  background-color: #303f9f;
+}
+
+/* Estilos para el modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 1rem;
+  background-color: #1a237e;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#map-container {
+  height: 500px;
+  width: 100%;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.map-info {
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
 }
 
 @keyframes spin {
