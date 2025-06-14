@@ -52,7 +52,7 @@
           <option value="5">Consulta N°5: Listar todos los pedidos cuya ruta estimada cruce más de 2 zonas de reparto.</option>
           <option value="6">Consulta N°6: Determinar los clientes que están a más de 5km de cualquier empresa o farmacia.</option>
         </select>
-
+        
         <div v-if="consultaCargando" class="loading-indicator">
           <div class="loader"></div>
           <span>Ejecutando consulta...</span>
@@ -94,6 +94,38 @@
             </div>
           </div>
 
+          <!-- Elementps de consulta 2 -->
+          <!-- Campo de entrada visible solo para la consulta 2 -->
+          <div v-if="consultaSeleccionada === '2'" class="input-parametro">
+            <label for="clienteId">ID del Cliente:</label>
+            <input
+              id="clienteId"
+              type="text"
+              v-model="parametroConsulta"
+              placeholder="Ingrese el ID del cliente"
+              class="input-cliente-id"
+            />
+          </div>
+          
+          <!-- Tabla resultados consulta 2 -->
+          <div v-if="consultaSeleccionada === '2'">
+            <table class="resultado-table">
+              <thead>
+                <tr>
+                  <th>ID Usuario</th>
+                  <th>ID Zona Cobertura</th>
+                  <th>Nombre Zona Cobertura</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                  <td>{{ item.idUsuario }}</td>
+                  <td>{{ item.idZonaCobertura }}</td>
+                  <td>{{ item.nombreZonaCobertura }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           <!-- Display para la consulta 3: Lista de objetos -->
           <div v-else-if="consultaSeleccionada === '3'">
@@ -236,6 +268,7 @@ import api from '@/api'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
+const parametroConsulta = ref('1');
 const farmaciasCount = ref(0)
 const usuariosCount = ref(0)
 const productosCount = ref(0)
@@ -290,6 +323,12 @@ const ejecutarConsulta = async () => {
     switch(consultaSeleccionada.value) {
       case '1':
         response = await api.get('/puntos/top5-cercanos');
+        break;
+      case '2':
+        if (!parametroConsulta.value) {
+          throw new Error('Debe ingresar el ID del cliente para la consulta 2.');
+        }
+        response = await api.get(`/usuarios/${parametroConsulta.value}/zonas`);
         break;
       case '3':
         response = await api.get('/repartidores/distancia-mensual');
@@ -922,5 +961,26 @@ onMounted(() => {
   color: red;
   padding: 20px;
   text-align: center;
+}
+
+/* input parametro consulta 2 */
+.input-parametro {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-parametro label {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.consulta-input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 300px;
 }
 </style>
