@@ -1,6 +1,7 @@
 package com.tbd.DeliveryMedicamentos.repositories;
 
 import com.tbd.DeliveryMedicamentos.entities.UsuarioEntity;
+import com.tbd.DeliveryMedicamentos.entities.ZonasEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -103,6 +104,21 @@ public class UsuarioRepository {
         try (Connection conn = sql2o.open()) {
             return conn.createQuery("SELECT COUNT(*) FROM Usuarios")
                     .executeScalar(Long.class);
+        }
+    }
+
+    public List<ZonasEntity> obtenerZonasPorUsuario(int usuarioId) {
+        String sql = """
+        SELECT z.id, z.nombre, z.geom
+        FROM zonas_cobertura z
+        JOIN usuarios u ON u.id = :usuarioId
+        WHERE ST_Intersects(z.geom, u.geom)
+        """;
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addParameter("usuarioId", usuarioId)
+                    .executeAndFetch(ZonasEntity.class);
         }
     }
 }

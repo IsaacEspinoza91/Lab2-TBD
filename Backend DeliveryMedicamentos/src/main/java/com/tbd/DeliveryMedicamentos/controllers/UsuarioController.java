@@ -1,6 +1,7 @@
 package com.tbd.DeliveryMedicamentos.controllers;
 
 import com.tbd.DeliveryMedicamentos.entities.UsuarioEntity;
+import com.tbd.DeliveryMedicamentos.entities.ZonasEntity;
 import com.tbd.DeliveryMedicamentos.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -94,4 +95,13 @@ public class UsuarioController {
         return ResponseEntity.ok(Collections.singletonMap("count", numUsers));
     }
 
+    @GetMapping("/{id}/zonas")
+    public ResponseEntity<?> obtenerZonasPorUsuario(@PathVariable("id") int usuarioId) {
+        try {
+            List<ZonasEntity> zonas = usuarioService.obtenerZonasDeUsuario(usuarioId);
+            return ResponseEntity.ok(zonas);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 }
