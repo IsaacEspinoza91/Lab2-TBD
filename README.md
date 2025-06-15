@@ -46,40 +46,60 @@
    Abre en tu navegador: [http://localhost:5173](http://localhost:5173)
 
 
-## 🗄️ Configurar la Base de Datos
+# 📂 Configurar la Base de Datos
 
-Antes de arrancar el backend y frontend, crea y estructura la base de datos siguiendo estos pasos:
+Antes de iniciar el backend y frontend, sigue estos pasos para crear y poblar la base de datos.
 
-1. **Crear la base de datos**  
-   Conéctate a PostgreSQL y ejecuta:
-   ```sql
-   CREATE DATABASE delivery_medicamentos;
-   \c delivery_medicamentos
-   CREATE EXTENSION postgis;
-   ```
+---
 
-2 **Cargar datos georeferenciales (Chile)**  
-   Descarga el archivo desde Google Drive:  
-   https://drive.google.com/file/d/1wmatr37a0w9cX5W6xFGHiVvmoNy7RLsE/view?usp=sharing
-   (nombre: `Laboratorio_2_Geom_TDB_GRUPO1`)  
-   
-3.1 **OPCION 1 por comandos**
-   Luego ejecuta:
-   ```bash
-   psql -U <tu_usuario> -d delivery_medicamentos -f Laboratorio_2_Geom_TDB_GRUPO1.sql
-   ```
+## 1. 💠 Crear la base de datos y activar PostGIS
 
-3.2 **OPCION 2 por pgAdmin4**
-   Cargar dentro de la base de datos delivery_medicamentos, el archivo Laboratorio_2_Geom_TDB_GRUPO1 y ejecutarlo
+Conéctate a PostgreSQL por pgAdmin4 o por CMD y ejecuta:
 
-   Nota: tarda al rededor 2 a 5 minutos cargar todo
+```sql
+CREATE DATABASE delivery_medicamentos;
+\c delivery_medicamentos
+CREATE EXTENSION postgis;
+```
+o crea la base de datos `delivery_medicamentos` por medio de la interfaz de pgAdmin4
+---
 
+## 2. 🌍 Cargar datos georeferenciales (Chile)
+
+Descarga el archivo desde Google Drive:
+
+🔗 [Laboratorio\_2\_Geom\_TDB\_GRUPO1.sql](https://drive.google.com/file/d/1wmatr37a0w9cX5W6xFGHiVvmoNy7RLsE/view?usp=sharing)
+
+---
+
+## 3. 📅 Importar el archivo `.sql` en la base
+
+### Opcion 1 – Por terminal 
+
+```bash
+psql -U <tu_usuario> -d delivery_medicamentos -f Laboratorio_2_Geom_TDB_GRUPO1.sql
+```
+
+### Opcion 2 – Usando pgAdmin4 (recomendado)
+
+* Selecciona la base `delivery_medicamentos`
+* Haz un `Query Tool`
+* Carga y ejecuta el archivo `.sql`
+
+🕒 *Nota:* la importación puede tardar entre 2 a 5 minutos.
+
+---
 
 ## ⚙️ Requisitos de Puertos
 
-- **8080** – Backend  
-- **5173** – Frontend  
+| Servicio | Puerto |
+| -------- | ------ |
+| Backend  | `8080` |
+| Frontend | `5173` |
 
-Ambos deben estar libres antes de iniciar las aplicaciones.
+Asegúrate de que estos puertos estén **libres** antes de iniciar.
+
+---
+
 
 ---
