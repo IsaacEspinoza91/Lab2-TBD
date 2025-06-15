@@ -75,6 +75,25 @@
           </button>
         </div>
 
+        <!-- Input para la consulta 7 -->
+        <div v-if="consultaSeleccionada === '7'" class="input-parametro">
+          <label for="usuarioId">ID del Usuario:</label>
+          <input 
+            id="usuarioId" 
+            type="text" 
+            v-model="parametroConsulta" 
+            placeholder="Ingrese el ID del usuario"
+            class="input-cliente-id" 
+          />
+          <button 
+            @click="ejecutarConsulta7" 
+            class="btn-buscar" 
+            :disabled="!parametroConsulta || consultaCargando"
+          >
+            Buscar
+          </button>
+        </div>
+
         <div v-if="consultaCargando" class="loading-indicator">
           <div class="loader"></div>
           <span>Ejecutando consulta...</span>
@@ -232,35 +251,20 @@
             </table>
           </div>
 
-          <!-- Display para la Consulta 7: Calcular la zona a la que pertenece un cliente. -->
+          <!-- Resultados para la consulta 7 -->
           <div v-else-if="consultaSeleccionada === '7'">
-            <div v-if="resultadoConsulta">
-              <p v-if="resultadoConsulta.idUsuario">
-                <strong>ID Usuario:</strong> {{ resultadoConsulta.idUsuario }}<br>
-                <strong>ID Zona Cobertura:</strong> {{ resultadoConsulta.idZonaCobertura }}<br>
-                <strong>Nombre Zona Cobertura:</strong> {{ resultadoConsulta.nombreZonaCobertura }}
-              </p>
-              <table v-else-if="Array.isArray(resultadoConsulta) && resultadoConsulta.length > 0" class="resultado-table">
-                <thead>
-                  <tr>
-                    <th>ID Usuario</th>
-                    <th>ID Zona Cobertura</th>
-                    <th>Nombre Zona Cobertura</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(item, index) in resultadoConsulta" :key="index">
-                    <td>{{ item.idUsuario }}</td>
-                    <td>{{ item.idZonaCobertura }}</td>
-                    <td>{{ item.nombreZonaCobertura }}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <p v-else>
-                No se encontró una zona de cobertura para el cliente o el cliente no está en ninguna zona.
-              </p>
+            <div v-if="consultaCargando" class="loading">Cargando...</div>
+            <div v-else-if="errorConsulta" class="error">{{ errorConsulta }}</div>
+            
+            <div v-else-if="resultadoConsulta" class="resultado-simple">
+              <div class="info-usuario">
+                <h3>Información del Usuario</h3>
+                <p><strong>Nombre:</strong> {{ resultadoConsulta.nombreCliente }}</p>
+                <p><strong>Zona de cobertura:</strong> {{ resultadoConsulta.nombreZona }}</p>
+              </div>
             </div>
           </div>
+
 
           <!-- Display para la Consulta 8: Zonas con alta densidad de pedidos -->
           <div v-else-if="consultaSeleccionada === '8'">
@@ -409,12 +413,21 @@ import api from '@/api'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
-const parametroConsulta = ref('1');
+// Añade estas variables si no las tienes
+const parametroConsulta = ref('')
+const mostrarModalMapa = ref(false)
 const farmaciasCount = ref(0)
 const usuariosCount = ref(0)
 const productosCount = ref(0)
 const pedidosMesCount = ref(0)
 const loading = ref(true)
+
+const mostrarMapa = ref(false); // Controla cuando mostrar el contenedor del mapa
+const mapaInicializado = ref(false);
+
+// Variables reactivas adicionales
+const mapContainer = ref(null)
+const mapaListo = ref(false)
 
 // Variables para las consultas
 const consultaSeleccionada = ref('')
@@ -543,8 +556,8 @@ const ejecutarConsulta = async () => {
       case '6':
         response = await api.get('/clientes/lejanos-5km');
         break;
-      case '7': 
-        errorConsulta.value = 'Consulta N°7 (Función Extra) seleccionada. Por favor, asegúrese de que el endpoint del backend para esta consulta esté definido y configurado correctamente, o si requiere un ID, que se proporcione adecuadamente.';
+      case '7':
+        // Solo preparamos el UI, no hacemos la consulta aquí
         consultaCargando.value = false;
         return;
       case '8': 
@@ -600,6 +613,98 @@ const ejecutarConsulta2 = async () => {
     consultaCargando.value = false;
   }
 };
+
+const ejecutarConsulta7 = async () => {
+  if (!parametroConsulta.value) {
+    errorConsulta.value = 'Debe ingresar el ID del usuario';
+    return;
+  }
+
+  try {
+    consultaCargando.value = true;
+    resultadoConsulta.value = null;
+    errorConsulta.value = null;
+
+    const response = await api.get(`/usuarios/ver-zona/${parametroConsulta.value}`);
+    resultadoConsulta.value = response.data;
+
+  } catch (error) {
+    console.error('Error al ejecutar consulta 7:', error);
+    errorConsulta.value = error.response?.data?.message || 'Error al buscar zona del usuario';
+  } finally {
+    consultaCargando.value = false;
+  }
+};
+
+// Función para extraer coordenadas legibles
+const extraerCoordenadas = (ubicacionJSON) => {
+  try {
+    const ubicacion = JSON.parse(ubicacionJSON);
+    if (ubicacion?.coordinates) {
+      return `Latitud: ${ubicacion.coordinates[1]}, Longitud: ${ubicacion.coordinates[0]}`;
+    }
+    return 'Coordenadas no disponibles';
+  } catch {
+    return 'Formato de coordenadas inválido';
+  }
+};
+
+const inicializarMapaConsulta7 = async () => {
+  try {
+    // Verificar usando la referencia
+    if (!mapContainer.value) {
+      throw new Error('El elemento del mapa no está disponible en el DOM')
+    }
+
+    // Limpiar mapa existente
+    if (map) {
+      map.remove()
+      map = null
+    }
+
+    // Parsear datos
+    const ubicacion = JSON.parse(resultadoConsulta.value.ubicacionCliente)
+    const poligono = JSON.parse(resultadoConsulta.value.poligonoZona)
+
+    // Validar coordenadas
+    if (!ubicacion?.coordinates || !poligono?.coordinates) {
+      throw new Error('Formato de coordenadas inválido')
+    }
+
+    // Invertir coordenadas para Leaflet [lat, lng]
+    const centro = [ubicacion.coordinates[1], ubicacion.coordinates[0]]
+    const coordsPoligono = poligono.coordinates[0].map(c => [c[1], c[0]])
+
+    // Crear mapa
+    map = L.map(mapContainer.value).setView(centro, 14)
+
+    // Capa base
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map)
+
+    // Marcador
+    L.marker(centro)
+      .addTo(map)
+      .bindPopup(resultadoConsulta.value.nombreCliente)
+
+    // Polígono
+    L.polygon(coordsPoligono, {
+      color: 'blue',
+      fillColor: '#3388ff',
+      fillOpacity: 0.2,
+      weight: 2
+    }).addTo(map)
+
+    // Ajustar vista
+    map.fitBounds([...coordsPoligono, centro])
+
+    return true
+  } catch (error) {
+    console.error('Error al inicializar mapa:', error)
+    throw error // Re-lanzar el error para manejo superior
+  }
+}
 
 // Método para abrir el mapa
 const abrirMapa = async (punto) => {
@@ -1289,5 +1394,189 @@ onMounted(() => {
 
 .detail-button:hover {
   background-color: #1976D2;
+}
+
+/* En tu sección de estilos */
+.input-parametro {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-cliente-id {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.btn-buscar {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-buscar:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.btn-buscar:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.info-usuario {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.datos-geograficos {
+  background-color: #f0f0f0;
+  padding: 15px;
+  border-radius: 5px;
+  font-family: monospace;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.loading {
+  padding: 20px;
+  text-align: center;
+}
+
+.error {
+  color: red;
+  padding: 20px;
+  text-align: center;
+}
+
+#mapaConsulta7 {
+  height: 400px !important;
+  width: 100% !important;
+  min-height: 400px;
+  background-color: #f0f0f0;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.input-parametro {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-cliente-id {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.btn-buscar {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-buscar:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.btn-buscar:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.info-usuario {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.datos-geograficos {
+  background-color: #f0f0f0;
+  padding: 15px;
+  border-radius: 5px;
+  font-family: monospace;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.loading {
+  padding: 20px;
+  text-align: center;
+}
+
+.error {
+  color: red;
+  padding: 20px;
+  text-align: center;
+}
+
+
+
+
+
+
+.resultado-simple {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.info-usuario {
+  margin-bottom: 20px;
+}
+
+.info-usuario h3 {
+  color: #2c3e50;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.info-usuario p {
+  margin: 8px 0;
+}
+
+.datos-geograficos {
+  background-color: #f0f0f0;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.datos-geograficos h4 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.error {
+  padding: 20px;
+  text-align: center;
+  color: #e74c3c;
+  background-color: #fde8e8;
+  border-radius: 5px;
 }
 </style>
