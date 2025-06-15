@@ -463,14 +463,14 @@ ORDER BY f.id, ST_DistanceSphere(f.geom, p.geom) DESC;  -- ordenamiento segun di
 
 -- 5. (Omar)Listar todos los pedidos cuya ruta estimada cruce más de 2 zonas de reparto.
 SELECT 
-            p.id AS pedido_id,
-            STRING_AGG(DISTINCT z.nombre, ', ') AS zonas_cruzadas,
-            COUNT(DISTINCT z.id) AS cantidad_zonas
-        FROM pedidos p
-        JOIN zonas_cobertura z ON ST_Intersects(p.ruta_estimada, z.geom)
-        GROUP BY p.id
-        HAVING COUNT(DISTINCT z.id) > 2
-        ORDER BY cantidad_zonas DESC
+    p.id AS pedido_id,
+    STRING_AGG(DISTINCT z.nombre, ', ') AS zonas_cruzadas,
+    COUNT(DISTINCT z.id) AS cantidad_zonas
+FROM pedidos p
+JOIN zonas_cobertura z ON ST_Intersects(p.ruta_estimada, z.geom)
+GROUP BY p.id
+HAVING COUNT(DISTINCT z.id) > 2
+ORDER BY cantidad_zonas DESC
 
 -- 6. (Bastian) Determinar los clientes que estan a mas de 5km de cualquier empresa o farmacia. ?Empresa?
 -- Selecciona todos los campos de la tabla 'usuarios' (u)

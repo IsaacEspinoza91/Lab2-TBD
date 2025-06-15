@@ -12,7 +12,7 @@ public class Sql2oConfig {
         return new Sql2o(
                 "jdbc:postgresql://localhost:5432/medicamentos",
                 "postgres",
-                "210622"
+                "postgres"
         );
     }
 }
