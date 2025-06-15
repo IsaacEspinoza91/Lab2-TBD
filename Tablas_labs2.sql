@@ -379,3 +379,39 @@ LEFT JOIN farmacias_volumen_entregas_exitosas fve ON fve.farmacia = (
     LIMIT 1
 )
 GROUP BY u.nombre, u.apellido, r.tipo_vehiculo, fve.total_productos_entregados, fve.total_productos_pedidos;
+
+
+CREATE TABLE Zonas_clientes (
+    id SERIAL PRIMARY KEY,
+    cliente_id INT REFERENCES Usuarios(ID),
+    nombre_cliente VARCHAR(100),
+    nombre_zona VARCHAR(100),
+    ubicacion_cliente TEXT, -- GeoJSON
+    poligono_zona TEXT      -- GeoJSON
+);
+
+
+CREATE OR REPLACE FUNCTION asignar_zona_cliente()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.Tipo = 'CLIENTE' THEN
+        INSERT INTO Zonas_clientes (cliente_id, nombre_cliente, nombre_zona, ubicacion_cliente, poligono_zona)
+        SELECT 
+            NEW.ID,
+            NEW.Nombre,
+            z.nombre,
+            ST_AsGeoJSON(NEW.geom),
+            ST_AsGeoJSON(z.geom)
+        FROM Zonas_cobertura z
+        WHERE ST_Within(NEW.geom, z.geom)
+        LIMIT 1;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_asignar_zona_cliente
+AFTER INSERT ON Usuarios
+FOR EACH ROW
+EXECUTE FUNCTION asignar_zona_cliente();
