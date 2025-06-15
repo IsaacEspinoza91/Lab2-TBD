@@ -27,6 +27,7 @@
               <th>Farmacia</th>
               <th>Repartidor</th>
               <th>Alerta</th>
+              <th>Ruta</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -45,6 +46,12 @@
               <td>{{ pedido.repartidor_id }}</td>
               <td>
                 <span v-if="pedidosConAlerta.includes(pedido.id)" class="alerta-text">Si</span>
+              </td>
+              <td>
+                <button v-if="pedido.rutaEstimada" @click="viewPedidoRoute(pedido.id)" class="view-route-button">
+                  Ver Ruta
+                </button>
+                <span v-else>No disponible</span>
               </td>
               <td class="actions">
                 <button @click="editPedido(pedido)" class="edit-button">
@@ -68,6 +75,8 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Modal para agregar/editar pedido -->
       <div v-if="showModal" class="modal-overlay">
         <div class="modal-content">
           <h3>{{ isEditing ? 'Editar Pedido' : 'Nuevo Pedido' }}</h3>
@@ -108,6 +117,10 @@
               <label>Repartidor ID:</label>
               <input v-model="form.repartidor_id" type="number" required />
             </div>
+            <div class="form-group">
+              <label>Ruta Estimada:</label>
+              <textarea v-model="form.rutaEstimada" rows="3" placeholder="Ej: LINESTRING(-70.6 -33.4, -70.7 -33.5)"></textarea>
+            </div>
             <div class="modal-actions">
               <button type="button" @click="closeModal" class="cancel-button">Cancelar</button>
               <button type="submit" class="save-button">{{
@@ -118,6 +131,7 @@
         </div>
       </div>
 
+      <!-- Modal de confirmación de eliminación -->
       <div v-if="showDeleteModal" class="modal-overlay">
         <div class="modal-content delete-modal">
           <h3>¿Eliminar pedido?</h3>
@@ -125,6 +139,26 @@
           <div class="modal-actions">
             <button @click="showDeleteModal = false" class="cancel-button">Cancelar</button>
             <button @click="deletePedido" class="delete-button">Eliminar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal para mostrar la ruta -->
+      <div v-show="showRutaModal" class="modal-overlay" @click.self="closeRutaModal">
+        <div class="modal-content map-modal-content">
+          <div class="modal-header">
+            <h3>Ruta del Pedido #{{ currentPedidoIdForRoute }}</h3>
+            <button @click="closeRutaModal" class="close-button">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div v-if="loadingRuta" class="loading-indicator">
+              <div class="loader"></div>
+              <span>Cargando ruta...</span>
+            </div>
+            <div id="mapRutaContainer" ref="mapRutaContainer" style="height: 400px; width: 100%;" v-else></div>
+            <p v-if="!currentRutaGeoJson && !loadingRuta" class="no-route-message">
+              No hay ruta estimada disponible para este pedido.
+            </p>
           </div>
         </div>
       </div>
@@ -158,10 +192,10 @@
           Error al cargar el medio de pago más usado.
         </p>
         <p v-if="
-          !loadingMedioPagoUrgente &&
-          !medioPagoUrgenteData &&
-          !medioPagoUrgenteError
-        ">
+            !loadingMedioPagoUrgente &&
+            !medioPagoUrgenteData &&
+            !medioPagoUrgenteError
+          ">
           No hay datos disponibles sobre el medio de pago más usado en urgencias.
         </p>
       </div>
@@ -198,10 +232,10 @@
           Error al cargar el cliente con mayor gasto.
         </p>
         <p v-if="
-          !loadingClienteMayorGasto &&
-          !clienteMayorGastoData &&
-          !clienteMayorGastoError
-        ">
+            !loadingClienteMayorGasto &&
+            !clienteMayorGastoData &&
+            !clienteMayorGastoError
+          ">
           No hay datos disponibles sobre el cliente con mayor gasto.
         </p>
       </div>
@@ -210,12 +244,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import axios from 'axios'
-import api from '@/api'
+import { ref, onMounted, nextTick } from 'vue'
+import { useAuthStore } from '@/stores/auth' // Asegúrate de que esta importación sea correcta si la usas
+import axios from 'axios' // Axios ya está importado por '@/api' si lo usas directamente
+import api from '@/api' // Tu instancia de Axios configurada
 
-const authStore = useAuthStore()
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
+// Corrección para el icono de marcador por defecto de Leaflet
+if (L.Icon.Default.prototype._get) {
+  delete L.Icon.Default.prototype._get;
+}
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+
+const authStore = useAuthStore() // Si usas este store
+
 const pedidos = ref([])
 const loadingPedidos = ref(true)
 const showModal = ref(false)
@@ -233,6 +282,7 @@ const form = ref({
   medio_pago_id: '',
   farmacia_id: '',
   repartidor_id: '',
+  rutaEstimada: null,
 })
 
 const medioPagoUrgenteData = ref(null)
@@ -246,6 +296,15 @@ const clienteMayorGastoError = ref(null)
 const pedidosConAlerta = ref([])
 const loadingAlertas = ref(false)
 const errorAlertas = ref(null)
+
+// Variables para el modal de ruta
+const showRutaModal = ref(false);
+const currentRutaGeoJson = ref(null);
+const loadingRuta = ref(false);
+const currentPedidoIdForRoute = ref(null);
+let mapInstance = null;
+let geoJsonLayer = null; 
+
 
 const fetchPedidosConAlerta = async () => {
   loadingAlertas.value = true
@@ -270,7 +329,7 @@ const fetchMedioPagoUrgente = async () => {
   try {
     const response = await api.get('/pedidos/medio-pago-urgente')
     medioPagoUrgenteData.value = response.data
-  } catch (error) {
+  }  catch (error) {
     console.error('Error al obtener el medio de pago más usado:', error)
     medioPagoUrgenteError.value = 'Hubo un error al cargar los datos.'
   } finally {
@@ -349,7 +408,8 @@ const createPedido = async () => {
     await fetchPedidos()
     closeModal()
     alert('Pedido creado exitosamente')
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error al crear pedido:', error)
     alert('Error al crear pedido')
   }
@@ -358,6 +418,7 @@ const createPedido = async () => {
 // Editar pedido
 const editPedido = (pedido) => {
   form.value = {
+    id: pedido.id, // Añadir el ID para la edición
     fecha: pedido.fecha,
     urgencia: pedido.urgencia,
     total_pagado: pedido.total_pagado,
@@ -367,6 +428,7 @@ const editPedido = (pedido) => {
     medio_pago_id: pedido.medio_pago_id,
     farmacia_id: pedido.farmacia_id,
     repartidor_id: pedido.repartidor_id,
+    rutaEstimada: pedido.rutaEstimada,
   }
   currentPedidoId.value = pedido.id
   isEditing.value = true
@@ -405,7 +467,7 @@ const deletePedido = async () => {
   }
 }
 
-// Cerrar modal
+// Cerrar modal de creación/edición
 const closeModal = () => {
   showModal.value = false
   isEditing.value = false
@@ -419,9 +481,114 @@ const closeModal = () => {
     medio_pago_id: '',
     farmacia_id: '',
     repartidor_id: '',
+    rutaEstimada: null,
   }
   currentPedidoId.value = null
 }
+
+// Función para abrir el modal de ruta
+const viewPedidoRoute = async (pedidoId) => {
+  currentPedidoIdForRoute.value = pedidoId;
+  currentRutaGeoJson.value = null;
+  loadingRuta.value = true;
+  showRutaModal.value = true;
+
+  await nextTick();
+
+  try {
+    const response = await api.get(`/pedidos/${pedidoId}/ruta`);
+    currentRutaGeoJson.value = response.data; 
+    console.log('Ruta recibida del backend:', currentRutaGeoJson.value);
+
+    if (currentRutaGeoJson.value) {
+      setTimeout(() => {
+        initMapForRoute(); 
+      }, 50); 
+    } else {
+      console.warn(`No hay ruta estimada para el pedido ${pedidoId}`);
+      alert(`No hay ruta estimada disponible para el pedido ${pedidoId}.`);
+    }
+
+  } catch (error) {
+    console.error(`Error al obtener la ruta para el pedido ${pedidoId}:`, error);
+    currentRutaGeoJson.value = null; 
+    alert(`Error al cargar la ruta del pedido ${pedidoId}. Por favor, verifica el backend.`);
+  } finally {
+    loadingRuta.value = false;
+  }
+};
+
+// Inicializar el mapa en el modal de ruta
+const initMapForRoute = () => {
+  if (mapInstance) {
+    mapInstance.remove();
+    mapInstance = null;
+  }
+
+  const mapContainer = document.getElementById('mapRutaContainer');
+  if (!mapContainer) {
+    console.error('Contenedor del mapa de ruta no encontrado');
+    return;
+  }
+
+  // Inicializa el mapa
+  mapInstance = L.map('mapRutaContainer').setView([0, 0], 2); 
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(mapInstance);
+
+  if (geoJsonLayer) {
+    geoJsonLayer.remove();
+  }
+
+  try {
+    const geoJsonData = currentRutaGeoJson.value; 
+
+    if (!geoJsonData || !geoJsonData.type || !geoJsonData.coordinates) {
+        throw new Error("La respuesta de la ruta está vacía o no es un GeoJSON válido.");
+    }
+
+    geoJsonLayer = L.geoJSON(geoJsonData, {
+      style: {
+        color: '#1a237e',
+        weight: 3,        
+        opacity: 0.7,     
+        dashArray: '5, 5', 
+      },
+      onEachFeature: (feature, layer) => {
+        if (feature.properties && feature.properties.name) {
+          layer.bindPopup(feature.properties.name);
+        }
+      }
+    }).addTo(mapInstance);
+
+    // se ajusta la vista del mapa para que quepa la ruta
+    if (geoJsonLayer.getBounds().isValid()) {
+      mapInstance.fitBounds(geoJsonLayer.getBounds());
+    } else {
+      mapInstance.setView([-33.45, -70.66], 12);
+    }
+  } catch (e) {
+    console.error('Error al parsear o dibujar la geometría:', e);
+    mapInstance.setView([-33.45, -70.66], 12); 
+    alert('Error: El formato de la ruta recibida no es válido o está vacío. Por favor, revisa los datos del pedido y el backend.');
+  }
+
+  mapInstance.invalidateSize();
+};
+
+// Cerrar modal de ruta
+const closeRutaModal = () => {
+  showRutaModal.value = false;
+  if (mapInstance) {
+    mapInstance.remove();
+    mapInstance = null;
+  }
+  currentRutaGeoJson.value = null;
+  currentPedidoIdForRoute.value = null;
+};
+
 
 // Cargar datos al montar el componente
 onMounted(async () => {
@@ -435,6 +602,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+
 .pedidos-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -594,6 +762,61 @@ onMounted(async () => {
   max-width: 600px;
 }
 
+/* Estilos específicos para el modal de mapa */
+.map-modal-content {
+  max-width: 800px; 
+  max-height: 600px; 
+  overflow: hidden; 
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 1rem; 
+  background-color: #1a237e; 
+  color: white;
+  border-radius: 8px 8px 0 0; 
+}
+
+.modal-header h3 {
+  margin: 0;
+  text-align: left; 
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: white; 
+}
+
+.modal-body {
+  padding-top: 10px;
+  flex-grow: 1; 
+  display: flex;
+  flex-direction: column;
+}
+
+#mapRutaContainer {
+  height: 400px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
+  flex-shrink: 0;
+}
+
+.no-route-message {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px;
+}
+
+
 .modal-content h3 {
   margin-top: 0;
   margin-bottom: 20px;
@@ -613,7 +836,8 @@ onMounted(async () => {
 
 .form-group input[type="text"],
 .form-group input[type="number"],
-.form-group input[type="date"] {
+.form-group input[type="date"],
+.form-group textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
@@ -691,9 +915,8 @@ onMounted(async () => {
 }
 
 .medio-pago-urgente-section h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
   text-align: center;
+  margin-bottom: 20px;
 }
 
 .medio-pago-urgente-table {
@@ -760,9 +983,8 @@ onMounted(async () => {
 }
 
 .cliente-mayor-gasto-section h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
   text-align: center;
+  margin-bottom: 20px;
 }
 
 .cliente-mayor-gasto-table {
@@ -803,5 +1025,20 @@ onMounted(async () => {
 
 .confirm-button:hover {
   background-color: #218838;
+}
+
+.view-route-button {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+.view-route-button:hover {
+  background-color: #0056b3;
 }
 </style>
