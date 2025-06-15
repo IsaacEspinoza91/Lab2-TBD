@@ -32,6 +32,10 @@ public class PedidosService {
         return pedidoRepository.mostrarRuta(pedidoId);
     }
 
+    public String mostrarRutaMultiLineString(int pedidoId) {
+        return pedidoRepository.mostrarRutaMultiLineString(pedidoId);
+    }
+
 
     public PedidosEntity getPedidoById(Integer id) {
         return pedidoRepository.findById(id);

@@ -46,6 +46,14 @@ public class PedidosController {
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ruta no encontrada");
     }
 
+    @GetMapping("/{id}/ruta/multilinestring")
+    public ResponseEntity<String> getRutaEstimadaMultiLineString(@PathVariable int id) {
+        String rutaGeoJson = pedidoService.mostrarRutaMultiLineString(id);
+        return rutaGeoJson != null ?
+                ResponseEntity.ok(rutaGeoJson) :
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ruta no encontrada");
+    }
+
 
     @GetMapping("/urgentes/medio-pago-frecuente")
     public ResponseEntity<?> obtenerMedioPagoMasUsadoEnUrgentes() {

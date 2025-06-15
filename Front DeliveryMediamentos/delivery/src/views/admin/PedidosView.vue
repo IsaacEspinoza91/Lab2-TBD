@@ -48,10 +48,9 @@
                 <span v-if="pedidosConAlerta.includes(pedido.id)" class="alerta-text">Si</span>
               </td>
               <td>
-                <button v-if="pedido.rutaEstimada" @click="viewPedidoRoute(pedido.id)" class="view-route-button">
+                <button @click="viewPedidoRoute(pedido.id)" class="view-route-button">
                   Ver Ruta
                 </button>
-                <span v-else>No disponible</span>
               </td>
               <td class="actions">
                 <button @click="editPedido(pedido)" class="edit-button">
@@ -496,9 +495,9 @@ const viewPedidoRoute = async (pedidoId) => {
   await nextTick();
 
   try {
-    const response = await api.get(`/pedidos/${pedidoId}/ruta`);
+    const response = await api.get(`/pedidos/${pedidoId}/ruta/multilinestring`);
     currentRutaGeoJson.value = response.data; 
-    console.log('Ruta recibida del backend:', currentRutaGeoJson.value);
+    console.log('Ruta MultiLineString recibida:', currentRutaGeoJson.value);
 
     if (currentRutaGeoJson.value) {
       setTimeout(() => {
@@ -512,7 +511,7 @@ const viewPedidoRoute = async (pedidoId) => {
   } catch (error) {
     console.error(`Error al obtener la ruta para el pedido ${pedidoId}:`, error);
     currentRutaGeoJson.value = null; 
-    alert(`Error al cargar la ruta del pedido ${pedidoId}. Por favor, verifica el backend.`);
+    alert(`Error al cargar la ruta del pedido ${pedidoId}.`);
   } finally {
     loadingRuta.value = false;
   }
@@ -531,8 +530,8 @@ const initMapForRoute = () => {
     return;
   }
 
-  // Inicializa el mapa
-  mapInstance = L.map('mapRutaContainer').setView([0, 0], 2); 
+  // Inicializa el mapa con una vista centrada en Santiago de Chile como fallback
+  mapInstance = L.map('mapRutaContainer').setView([-33.45, -70.66], 12);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -543,36 +542,36 @@ const initMapForRoute = () => {
   }
 
   try {
-    const geoJsonData = currentRutaGeoJson.value; 
+    const geoJsonData = currentRutaGeoJson.value;
 
     if (!geoJsonData || !geoJsonData.type || !geoJsonData.coordinates) {
-        throw new Error("La respuesta de la ruta está vacía o no es un GeoJSON válido.");
+      throw new Error("La respuesta de la ruta está vacía o no es un GeoJSON válido.");
     }
 
+    // Estilo para el MultiLineString
+    const lineStyle = {
+      color: '#1a237e',
+      weight: 4,
+      opacity: 0.7,
+      dashArray: '5, 5',
+    };
+
+    // Crear el GeoJSON layer con el estilo definido
     geoJsonLayer = L.geoJSON(geoJsonData, {
-      style: {
-        color: '#1a237e',
-        weight: 3,        
-        opacity: 0.7,     
-        dashArray: '5, 5', 
-      },
-      onEachFeature: (feature, layer) => {
-        if (feature.properties && feature.properties.name) {
-          layer.bindPopup(feature.properties.name);
-        }
-      }
+      style: lineStyle
     }).addTo(mapInstance);
 
-    // se ajusta la vista del mapa para que quepa la ruta
+    // Ajustar la vista del mapa para que quepa toda la ruta
     if (geoJsonLayer.getBounds().isValid()) {
-      mapInstance.fitBounds(geoJsonLayer.getBounds());
+      mapInstance.fitBounds(geoJsonLayer.getBounds(), { padding: [50, 50] });
     } else {
+      // Vista por defecto para Santiago si no hay bounds válidos
       mapInstance.setView([-33.45, -70.66], 12);
     }
   } catch (e) {
     console.error('Error al parsear o dibujar la geometría:', e);
-    mapInstance.setView([-33.45, -70.66], 12); 
-    alert('Error: El formato de la ruta recibida no es válido o está vacío. Por favor, revisa los datos del pedido y el backend.');
+    mapInstance.setView([-33.45, -70.66], 12);
+    alert('Error: El formato de la ruta recibida no es válido.');
   }
 
   mapInstance.invalidateSize();

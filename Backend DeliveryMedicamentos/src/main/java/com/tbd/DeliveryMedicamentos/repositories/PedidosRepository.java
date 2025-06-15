@@ -65,6 +65,16 @@ public class PedidosRepository {
         }
     }
 
+    public String mostrarRutaMultiLineString(int pedidoId) {
+        String sql = "SELECT ST_AsGeoJSON(ruta_estimada_mls) FROM Pedidos WHERE ID = :pedidoId";
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addParameter("pedidoId", pedidoId)
+                    .executeScalar(String.class);
+        }
+    }
+
     /*FORMATO
     GET http://localhost:8080/api/pedidos/{id}/ruta
      */

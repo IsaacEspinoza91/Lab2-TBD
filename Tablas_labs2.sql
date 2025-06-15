@@ -74,7 +74,8 @@ CREATE TABLE Pedidos (
     Medio_pago_ID INT REFERENCES Medios_de_pago(ID),
     Farmacia_ID INT REFERENCES Farmacias(ID),
     Repartidor_ID INT REFERENCES Usuarios(ID),
-    ruta_estimada geometry(LineString, 4326) -- NUEVO: ruta estimada del pedido
+    ruta_estimada geometry(LineString, 4326), -- NUEVO: ruta estimada del pedido
+    ruta_estimada_mls geometry(MultiLineString, 4326)
 );
 
 -- Crear tabla Productos
@@ -550,6 +551,104 @@ CREATE TRIGGER trg_actualizar_ruta_estimada
 AFTER INSERT ON Pedidos
 FOR EACH ROW
 EXECUTE FUNCTION actualizar_ruta_estimada();
+
+
+
+
+
+
+
+
+
+
+
+-- Nuevo metodo calcular ruta estimada
+CREATE OR REPLACE FUNCTION calcular_ruta_estimada_trigger()
+RETURNS trigger AS $$
+DECLARE
+    origen geometry(Point, 4326);
+    destino geometry(Point, 4326);
+    id_origen INT;
+    id_destino INT;
+    geom_line geometry(MultiLineString, 4326);
+BEGIN
+    -- Obtener geometría de la farmacia (origen)
+    SELECT geom INTO origen
+    FROM Farmacias
+    WHERE id = NEW.farmacia_id;
+
+    -- Obtener geometría del cliente (destino)
+    SELECT geom INTO destino
+    FROM Usuarios
+    WHERE id = NEW.cliente_id;
+
+    -- Validar que ambos puntos existen
+    IF origen IS NULL OR destino IS NULL THEN
+        RAISE EXCEPTION 'No se pudo obtener el origen o destino geográfico para el pedido %', NEW.id;
+    END IF;
+
+    -- Buscar nodo más cercano al origen
+	SELECT
+	    CASE
+	        WHEN ST_Distance(ST_PointN(geom_way, 1), origen) <
+	             ST_Distance(ST_PointN(geom_way, ST_NPoints(geom_way)), origen)
+	        THEN source
+	        ELSE target
+	    END
+	INTO id_origen
+	FROM osm_2po_4pgr
+	ORDER BY geom_way <-> origen
+	LIMIT 1;
+
+
+    -- Buscar nodo más cercano al destino
+	SELECT
+	    CASE
+	        WHEN ST_Distance(ST_PointN(geom_way, 1), destino) <
+	             ST_Distance(ST_PointN(geom_way, ST_NPoints(geom_way)), destino)
+	        THEN source
+	        ELSE target
+	    END
+	INTO id_destino
+	FROM osm_2po_4pgr
+	ORDER BY geom_way <-> destino
+	LIMIT 1;
+
+
+    -- Calcular ruta y unir geometrías
+    WITH ruta AS (
+        SELECT * FROM pgr_dijkstra(
+            'SELECT id, source, target, cost, reverse_cost FROM osm_2po_4pgr',
+            id_origen, id_destino,
+            directed := true
+        )
+    ),
+    segmentos AS (
+        SELECT w.geom_way
+        FROM ruta r
+        JOIN osm_2po_4pgr w ON r.edge = w.id
+        WHERE r.edge != -1
+        ORDER BY r.seq
+    )
+    SELECT ST_Union(geom_way)::geometry(MultiLineString, 4326) INTO geom_line
+    FROM segmentos;
+
+    -- Actualizar la fila con la ruta
+    UPDATE Pedidos
+    SET ruta_estimada_mls = geom_line
+    WHERE id = NEW.id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE TRIGGER trigger_calcular_ruta
+AFTER INSERT ON Pedidos
+FOR EACH ROW
+EXECUTE FUNCTION calcular_ruta_estimada_trigger();
+
 
 
 

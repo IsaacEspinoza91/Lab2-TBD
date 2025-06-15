@@ -15,6 +15,7 @@ public class PedidosEntity {
     private int farmacia_id;
     private int repartidor_id;
     private String ruta_estimada; // Almacenar la ruta como WKT (LINESTRING)
+    private String ruta_estimada_mls;
 
 
     // Constructores
@@ -124,5 +125,19 @@ public class PedidosEntity {
         return ruta_estimada;
     }
 
+    public String getRuta_estimada_mls() {
+        return ruta_estimada_mls;
+    }
 
+    public void setRuta_estimada_mls(String ruta_estimada_mls) {
+        this.ruta_estimada_mls = ruta_estimada_mls;
+    }
+
+    public String getRuta_estimada() {
+        return ruta_estimada;
+    }
+
+    public void setRuta_estimada(String ruta_estimada) {
+        this.ruta_estimada = ruta_estimada;
+    }
 }
