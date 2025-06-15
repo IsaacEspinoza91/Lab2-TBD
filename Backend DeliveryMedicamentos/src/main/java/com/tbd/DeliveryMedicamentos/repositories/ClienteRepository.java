@@ -126,14 +126,15 @@ public class ClienteRepository {
 
     public List<ClienteDetalladoDTO> findClientesLejanosA5kmDeFarmacia() {
         String sql = """
-            SELECT 
+            SELECT\s
                 u.id AS usuarioId,
                 u.nombre,
                 u.email,
                 c.direccion
             FROM usuarios u
             JOIN clientes c ON u.id = c.usuario_id
-            WHERE NOT EXISTS (
+            WHERE u.geom IS NOT NULL
+            AND NOT EXISTS (
                 SELECT 1
                 FROM farmacias f
                 WHERE ST_DWithin(
