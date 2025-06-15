@@ -50,6 +50,10 @@ public class PtoInteresService {
         return ptoInteresRepository.count();
     }
 
+    public List<PtoInteresDTO> getPtosInteresCercanosAUsuario(Integer idUsuario) {
+        return ptoInteresRepository.findPtosInteresCercanosAUsuario(idUsuario);
+    }
+
     // Si tuvieras métodos adicionales en el repositorio para puntos de interés,
     // como buscar puntos cercanos, los delegarías aquí:
     /*

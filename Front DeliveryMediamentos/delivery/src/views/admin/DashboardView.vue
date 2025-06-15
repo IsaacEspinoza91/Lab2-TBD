@@ -61,6 +61,8 @@
           </option>
           <option value="8">Función Extra: Detectar zonas con alta densidad de pedidos.
           </option>
+          <option value="9">Función Extra: Crear una tabla de puntos de interés cercanos y consultarlos con ST_DWithin.
+          </option>
         </select>
 
         <!-- Mostrar campo de entrada solo para consulta 2 -->
@@ -280,6 +282,50 @@
             </table>
           </div>
 
+          <!-- Display para la consulta 9: Puntos de interés cercanos al usuario -->
+          <div v-else-if="consultaSeleccionada === '9'">
+            <table class="resultado-table" v-if="resultadoConsulta && resultadoConsulta.length">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Lugar</th>
+                <th>Latitud</th>
+                <th>Longitud</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="(punto, index) in resultadoConsulta" :key="index">
+                <td>{{ punto.id }}</td>
+                <td>{{ punto.nombre }}</td>
+                <td>{{ punto.lugar }}</td>
+                <td>{{ punto.latitud }}</td>
+                <td>{{ punto.longitud }}</td>
+              </tr>
+              </tbody>
+            </table>
+
+            <p style="margin-top: 1rem;">
+              Para crear tabla para un usuario, ingrese un id de usuario:
+            </p>
+
+            <input
+                type="text"
+                v-model="usuarioIdInput"
+                placeholder="Ingrese ID de usuario"
+                style="margin-right: 8px; padding: 4px 8px;"
+            />
+            <button @click="generarTablaPorUsuario" :disabled="consultaCargando">
+              Generar
+            </button>
+
+            <div v-if="errorConsulta" style="color: red; margin-top: 0.5rem;">
+              {{ errorConsulta }}
+            </div>
+          </div>
+
+
+
           <pre v-else>{{ JSON.stringify(resultadoConsulta, null, 2) }}</pre>
         </div>
 
@@ -382,6 +428,7 @@ let map = null
 let farmaciaMarker = null
 let puntoMarker = null
 let line = null
+const usuarioIdInput = ref('')
 
 
 const mostrarModalDetalles = ref(false)
@@ -446,6 +493,26 @@ const manejarCambioConsulta = () => {
   }
 };
 
+// Función para hacer el request con el id ingresado
+const generarTablaPorUsuario = async () => {
+  if (!usuarioIdInput.value) {
+    errorConsulta.value = 'Debe ingresar un ID de usuario válido'
+    return
+  }
+  try {
+    consultaCargando.value = true
+    errorConsulta.value = null
+    resultadoConsulta.value = null
+
+    const response = await api.get(`/puntos-de-interes/cercanos-a-usuario/${usuarioIdInput.value}`)
+    resultadoConsulta.value = response.data
+  } catch (error) {
+    console.error('Error al obtener puntos de interés cercanos a usuario:', error)
+    errorConsulta.value = error.response?.data?.message || 'Error al obtener datos'
+  } finally {
+    consultaCargando.value = false
+  }
+}
 
 const ejecutarConsulta = async () => {
   if (!consultaSeleccionada.value) return;
@@ -483,6 +550,21 @@ const ejecutarConsulta = async () => {
       case '8': 
         response = await api.get('/zonas/densidad-pedidos');
         break;
+      case '9':
+        response = await api.get('/puntos-de-interes');
+        // Aquí hacemos el parse del geom en latitud y longitud
+        resultadoConsulta.value = response.data.map(punto => {
+          const match = punto.geom.match(/POINT\((-?\d+\.?\d*) (-?\d+\.?\d*)\)/);
+          return {
+            id: punto.id,
+            nombre: punto.nombre,
+            lugar: punto.lugar,
+            longitud: parseFloat(match[1]),
+            latitud: parseFloat(match[2])
+          };
+        });
+        consultaCargando.value = false;
+        return; // para evitar asignar resultadoConsulta.value abajo otra vez
       default:
         response = await api.get(`/consultas/consulta-${consultaSeleccionada.value}`);
     }

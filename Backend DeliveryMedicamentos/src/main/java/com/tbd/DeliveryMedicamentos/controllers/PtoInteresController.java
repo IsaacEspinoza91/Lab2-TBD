@@ -95,4 +95,12 @@ public class PtoInteresController {
         long numPtosInteres = ptoInteresService.countPtosInteres();
         return ResponseEntity.ok(Collections.singletonMap("count", numPtosInteres));
     }
+
+    @GetMapping("/cercanos-a-usuario/{idUsuario}")
+    public ResponseEntity<List<PtoInteresDTO>> getPtosInteresCercanosAUsuario(@PathVariable int idUsuario) {
+        List<PtoInteresDTO> puntosCercanos = ptoInteresService.getPtosInteresCercanosAUsuario(idUsuario);
+
+        // Retorna 200 OK con la lista (vacía o con contenido)
+        return new ResponseEntity<>(puntosCercanos, HttpStatus.OK);
+    }
 }

@@ -22,9 +22,8 @@ public class PtoInteresRepository {
 
     public List<PtoInteresEntity> findAll() {
         try (Connection conn = sql2o.open()) {
-            // No recuperamos geom aquí, solo los datos básicos.
-            // Si necesitas geom para algo, lo incluirías.
-            return conn.createQuery("SELECT id, nombre, lugar FROM puntos_de_interes")
+            // Ahora recuperamos el campo 'geom' como texto usando ST_AsText
+            return conn.createQuery("SELECT id, nombre, lugar, ST_AsText(geom) AS geom FROM puntos_de_interes")
                     .executeAndFetch(PtoInteresEntity.class);
         }
     }
@@ -101,6 +100,26 @@ public class PtoInteresRepository {
         }
     }
 
+    public List<PtoInteresDTO> findPtosInteresCercanosAUsuario(Integer idUsuario) {
+        // Distancia fija en 3 kilómetros (3000 metros)
+        final double DISTANCE_IN_METERS = 3000.0;
+
+        try (Connection conn = sql2o.open()) {
+            String sql = "SELECT " +
+                    "pi.id, pi.nombre, pi.lugar, ST_Y(pi.geom) AS latitud, ST_X(pi.geom) AS longitud " +
+                    "FROM " +
+                    "puntos_de_interes AS pi, usuarios AS u " +
+                    "WHERE " +
+                    "u.id = :idUsuario " +
+                    "AND ST_DWithin(u.geom::geography, pi.geom::geography, :distanceInMeters)";
+            return conn.createQuery(sql)
+                    .addParameter("idUsuario", idUsuario)
+                    .addParameter("distanceInMeters", DISTANCE_IN_METERS)
+                    .executeAndFetch(PtoInteresDTO.class);
+        }
+    }
+
+
     // Aquí podrías agregar métodos específicos para puntos de interés si fuera necesario,
     // como buscar puntos cercanos a una ubicación, etc.
     // Por ejemplo:
@@ -118,4 +137,5 @@ public class PtoInteresRepository {
         }
     }
     */
+
 }
