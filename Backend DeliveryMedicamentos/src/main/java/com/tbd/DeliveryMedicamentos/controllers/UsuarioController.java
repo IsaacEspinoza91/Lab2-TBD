@@ -37,6 +37,17 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/ver-zona/{id}")
+    public ResponseEntity<ZonaUsuarioDTO> verZonaUsuario(@PathVariable int id) {
+        ZonaUsuarioDTO zona = usuarioService.verZonaUser(id);
+        if (zona != null) {
+            return new ResponseEntity<>(zona, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+
     @PostMapping
     public ResponseEntity<UsuarioEntity> createUsuario(@RequestBody UsuarioEntity usuario) {
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));

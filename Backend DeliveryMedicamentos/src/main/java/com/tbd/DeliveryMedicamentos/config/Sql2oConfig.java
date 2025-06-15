@@ -10,7 +10,7 @@ public class Sql2oConfig {
     @Bean
     public Sql2o sql2o() {
         return new Sql2o(
-                "jdbc:postgresql://localhost:5432/deliverymedicamentos",
+                "jdbc:postgresql://localhost:5432/medicamentos",
                 "postgres",
                 "postgres"
         );

@@ -35,6 +35,10 @@ public class UsuarioService {
         return usuarioRepository.obtenerZonaDeCliente(idCliente);
     }
 
+    public ZonaUsuarioDTO verZonaUser(int idCliente) {
+        return usuarioRepository.verZonaUser(idCliente);
+    }
+
 
     public UsuarioEntity getUsuarioById(Integer id) {
         return usuarioRepository.findById(id);

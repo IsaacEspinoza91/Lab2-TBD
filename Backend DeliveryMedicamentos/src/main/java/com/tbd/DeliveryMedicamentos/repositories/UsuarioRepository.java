@@ -47,6 +47,26 @@ public class UsuarioRepository {
         }
     }
 
+    public ZonaUsuarioDTO verZonaUser(int idCliente) {
+        String sql = """
+        SELECT 
+            nombre_cliente AS nombreCliente,
+            nombre_zona AS nombreZona,
+            ubicacion_cliente AS ubicacionCliente,
+            poligono_zona AS poligonoZona
+        FROM Zonas_clientes
+        WHERE cliente_id = :idCliente
+        LIMIT 1
+    """;
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addParameter("idCliente", idCliente)
+                    .executeAndFetchFirst(ZonaUsuarioDTO.class);
+        }
+    }
+
+
 
     public UsuarioEntity findById(Integer id) {
         try (Connection conn = sql2o.open()) {
