@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.repositories;
 
+import com.tbd.DeliveryMedicamentos.DTO.ZonaDensidadDTO;
 import com.tbd.DeliveryMedicamentos.entities.ZonasEntity;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
@@ -78,6 +79,28 @@ public class ZonasRepository {
                     .executeUpdate()
                     .getResult();
             return deleted > 0;
+        }
+    }
+
+    public List<ZonaDensidadDTO> findZonasConAltaDensidadPedidos() {
+        String sql = "SELECT " +
+                "    zc.ID AS idZona, " +
+                "    zc.nombre AS nombreZona, " +
+                "    COUNT(p.ID) AS cantidadPedidos " +
+                "FROM " +
+                "    Zonas_cobertura zc " +
+                "JOIN " +
+                "    Pedidos p ON ST_Contains(zc.geom, ST_StartPoint(p.ruta_estimada)) " +
+                "WHERE " +
+                "    p.ruta_estimada IS NOT NULL " +
+                "GROUP BY " +
+                "    zc.ID, zc.nombre " +
+                "ORDER BY " +
+                "    cantidadPedidos DESC;";
+
+        try (Connection con = sql2o.open()) {
+            return con.createQuery(sql)
+                    .executeAndFetch(ZonaDensidadDTO.class);
         }
     }
 }

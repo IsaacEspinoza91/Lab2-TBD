@@ -1,5 +1,6 @@
 package com.tbd.DeliveryMedicamentos.services;
 
+import com.tbd.DeliveryMedicamentos.DTO.ZonaDensidadDTO;
 import com.tbd.DeliveryMedicamentos.entities.ZonasEntity;
 import com.tbd.DeliveryMedicamentos.repositories.ZonasRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,5 +37,9 @@ public class ZonasService {
 
     public boolean delete(int id) {
         return zonasRepository.delete(id);
+    }
+
+    public List<ZonaDensidadDTO> getZonasConAltaDensidadPedidos() {
+        return zonasRepository.findZonasConAltaDensidadPedidos();
     }
 }
