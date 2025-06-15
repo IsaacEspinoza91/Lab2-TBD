@@ -508,4 +508,20 @@ WHERE cliente_id = :idCliente
 LIMIT 1
 
 
+-- 2. Detectar zonas con alta densidad de pedidos mediante agregación de puntos.
+SELECT
+    zc.ID AS idZona,
+    zc.nombre AS nombreZona,
+    COUNT(p.ID) AS cantidadPedidos
+FROM
+    Zonas_cobertura zc
+JOIN
+    Pedidos p ON ST_Contains(zc.geom, ST_StartPoint(p.ruta_estimada)) 
+WHERE
+    p.ruta_estimada IS NOT NULL
+GROUP BY
+    zc.ID, zc.nombre
+ORDER BY
+    cantidadPedidos DESC;
 
+    
