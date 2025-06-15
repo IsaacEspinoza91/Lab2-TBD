@@ -193,24 +193,17 @@
             </table>
           </div>
 
-          <!-- Display para la consulta 6: Lista de clientes lejanos -->
           <div v-else-if="consultaSeleccionada === '6'">
             <table class="resultado-table">
               <thead>
               <tr>
                 <th>ID Cliente</th>
                 <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Distancia Mínima (km)</th>
-              </tr>
+                <th>Email</th> </tr>
               </thead>
               <tbody>
               <tr v-for="(cliente, index) in resultadoConsulta" :key="index">
-                <td>{{ cliente.cliente_id }}</td>
-                <td>{{ cliente.nombre }}</td>
-                <td>{{ cliente.apellido }}</td>
-                <td>{{ parseFloat(cliente.distancia_minima_km).toFixed(2) }}</td>
-              </tr>
+                <td>{{ cliente.usuarioId }}</td> <td>{{ cliente.nombre }}</td> <td>{{ cliente.email }}</td> </tr>
               </tbody>
             </table>
           </div>
