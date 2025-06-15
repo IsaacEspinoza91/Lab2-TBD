@@ -125,6 +125,13 @@ CREATE TABLE Zonas_cobertura (
     geom geometry(Polygon, 4326) -- Polígono que representa la zona de cobertura
 );
 
+-- Crear Tabla de puntos de interes
+CREATE TABLE puntos_de_interes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    lugar VARCHAR(100),
+    geom GEOMETRY(Point, 4326) -- O ajusta el tipo de geometría y SRID según tu necesidad
+);
 
 -- PROCEDIMIENTOS ALMACENADOS
 -- 7. Registrar un pedido completo. [Omar]

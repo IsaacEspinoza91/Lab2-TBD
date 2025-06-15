@@ -305,3 +305,22 @@ INSERT INTO Punto_de_entrega (Nombre, Farmacia_ID, geom) VALUES
 ('Supermercado Estación Central', 7, ST_SetSRID(ST_MakePoint(-70.6900, -33.4500), 4326)),
 ('Depósito Las Rejas', 7, ST_SetSRID(ST_MakePoint(-70.6850, -33.4650), 4326)),
 ('Tienda Maestranza', 7, ST_SetSRID(ST_MakePoint(-70.6750, -33.4650), 4326));
+
+
+--- Insertar puntos de interes
+INSERT INTO puntos_de_interes (nombre, lugar, geom) VALUES
+-- Hospitales
+('Hospital Clínico Universidad de Chile', 'Independencia', ST_SetSRID(ST_MakePoint(-70.653985, -33.416485), 4326)),
+('Hospital El Carmen Dr. Luis Valentín Ferrada', 'Maipú', ST_SetSRID(ST_MakePoint(-70.764697, -33.502798), 4326)),
+
+-- Centros de Salud Mental
+('Instituto Psiquiátrico Dr. José Horwitz Barak', 'Recoleta', ST_SetSRID(ST_MakePoint(-70.654195, -33.414376), 4326)),
+('Centro de Salud Mental Amulen – La Florida', 'La Florida', ST_SetSRID(ST_MakePoint(-70.567717, -33.548056), 4326)),
+
+-- Clínicas
+('Clínica Alemana de Santiago', 'Vitacura', ST_SetSRID(ST_MakePoint(-70.568645, -33.393114), 4326)),
+('Clínica Santa María', 'Providencia', ST_SetSRID(ST_MakePoint(-70.630466, -33.424473), 4326)),
+
+-- Consultorios (CESFAM)
+('CESFAM Padre Alberto Hurtado – Pudahuel', 'Pudahuel', ST_SetSRID(ST_MakePoint(-70.761046, -33.444162), 4326)),
+('CESFAM Dr. Salvador Bustos – Ñuñoa', 'Ñuñoa', ST_SetSRID(ST_MakePoint(-70.603940, -33.463139), 4326));
