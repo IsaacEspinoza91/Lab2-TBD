@@ -212,6 +212,8 @@ NOTA: Verificar que farmacia y usuario tengan poblado el atributo de ubicacion p
 
 ================ version copiar y pegar =================
 
+CREATE EXTENSION pgrouting;
+
 SELECT pgr_createTopology('osm_2po_4pgr', 0.00001, 'geom_way', 'id');
 
 INSERT INTO ways_vertices_pgr (id, the_geom)

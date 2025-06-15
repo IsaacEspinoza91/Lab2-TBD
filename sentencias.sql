@@ -495,7 +495,17 @@ WHERE
           )
 );
 
+-- Sentencias extras ---
 
+-- 1. Implementar una función que calcule automáticamente la zona a la que pertenece un cliente.
+SELECT 
+    nombre_cliente AS nombreCliente,
+    nombre_zona AS nombreZona,
+    ubicacion_cliente AS ubicacionCliente,
+    poligono_zona AS poligonoZona
+FROM Zonas_clientes
+WHERE cliente_id = :idCliente
+LIMIT 1
 
 
 
