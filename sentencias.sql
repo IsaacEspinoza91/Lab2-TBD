@@ -475,22 +475,25 @@ SELECT
 -- 6. (Bastian) Determinar los clientes que estan a mas de 5km de cualquier empresa o farmacia. ?Empresa?
 -- Selecciona todos los campos de la tabla 'usuarios' (u)
 SELECT
-    u.id AS usuarioId,
-    u.nombre,
-    u.email,
-    c.direccion
-FROM usuarios u
-         JOIN clientes c ON u.id = c.usuario_id
-WHERE u.geom IS NOT NULL
+    u.id AS usuarioId, -- Cambiado de 'id' a 'usuarioId'
+    u.nombre AS nombre,
+    u.email AS email
+-- Si 'direccion' existe en 'usuarios', agrégala aquí:
+-- u.direccion AS direccion
+FROM
+    usuarios u
+WHERE
+    u.tipo = 'CLIENTE'
+  AND u.geom IS NOT NULL
   AND NOT EXISTS (
     SELECT 1
     FROM farmacias f
     WHERE ST_DWithin(
-                  u.geom::geography,
-                  f.geom::geography,
+                  ST_SetSRID(u.geom, 4326)::geography,
+                  ST_SetSRID(f.geom, 4326)::geography,
                   5000
           )
-)
+);
 
 
 

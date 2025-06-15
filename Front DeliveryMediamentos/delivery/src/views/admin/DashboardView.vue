@@ -39,7 +39,6 @@
       </router-link>
     </div>
 
-    <!-- Sección de consultas -->
     <div class="consultas-section">
       <h2>Consultas del Sistema</h2>
       <div class="consulta-selector">
@@ -61,11 +60,10 @@
           </option>
         </select>
 
-        <!-- Mostrar campo de entrada solo para consulta 2 -->
         <div v-if="consultaSeleccionada === '2'" class="input-parametro">
           <label for="clienteId">ID del Cliente:</label>
           <input id="clienteId" type="text" v-model="parametroConsulta" placeholder="Ingrese el ID del cliente"
-            class="input-cliente-id" />
+                 class="input-cliente-id" />
           <button @click="ejecutarConsulta2" class="btn-buscar" :disabled="!parametroConsulta || consultaCargando">
             <i class="fas fa-search"></i> Buscar
           </button>
@@ -79,10 +77,9 @@
         <div v-if="resultadoConsulta" class="resultado-consulta">
           <h3>Resultado:</h3>
 
-          <!-- Consulta 1: Puntos más cercanos -->
           <div v-if="consultaSeleccionada === '1'" class="consulta-1-container">
             <div class="farmacia-group" v-for="(grupo, farmaciaId) in agruparPorFarmacia(resultadoConsulta)"
-              :key="farmaciaId">
+                 :key="farmaciaId">
               <div class="farmacia-header">
                 <h4>{{ grupo.farmaciaNombre }}</h4>
                 <span class="badge">{{ grupo.puntos.length }} puntos cercanos</span>
@@ -90,69 +87,66 @@
 
               <table class="resultado-table">
                 <thead>
-                  <tr>
-                    <th style="width: 40%">Punto de Entrega</th>
-                    <th style="width: 20%">Distancia</th>
-                    <th style="width: 20%">Coordenadas</th>
-                    <th style="width: 20%">Acciones</th>
-                  </tr>
+                <tr>
+                  <th style="width: 40%">Punto de Entrega</th>
+                  <th style="width: 20%">Distancia</th>
+                  <th style="width: 20%">Coordenadas</th>
+                  <th style="width: 20%">Acciones</th>
+                </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in grupo.puntos" :key="index">
-                    <td>{{ item.puntoEntregaNombre }}</td>
-                    <td>{{ parseFloat(item.distanciaMetros).toFixed(2) }} m</td>
-                    <td>{{ item.latitud.toFixed(4) }}, {{ item.longitud.toFixed(4) }}</td>
-                    <td>
-                      <button @click="abrirMapa(item)" class="map-button">
-                        <i class="fas fa-map-marked-alt"></i> Ver Mapa
-                      </button>
-                    </td>
-                  </tr>
+                <tr v-for="(item, index) in grupo.puntos" :key="index">
+                  <td>{{ item.puntoEntregaNombre }}</td>
+                  <td>{{ parseFloat(item.distanciaMetros).toFixed(2) }} m</td>
+                  <td>{{ item.latitud.toFixed(4) }}, {{ item.longitud.toFixed(4) }}</td>
+                  <td>
+                    <button @click="abrirMapa(item)" class="map-button">
+                      <i class="fas fa-map-marked-alt"></i> Ver Mapa
+                    </button>
+                  </td>
+                </tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- Elementps de consulta 2 -->
           <div v-else-if="consultaSeleccionada === '2'">
 
-            <!-- Tabla resultados consulta 2 -->
             <div v-if="resultadoConsulta && consultaSeleccionada === '2'">
               <table class="resultado-table">
                 <thead>
-                  <tr>
-                    <th>ID Usuario</th>
-                    <th>ID Zona Cobertura</th>
-                    <th>Nombre Zona Cobertura</th>
-                  </tr>
+                <tr>
+                  <th>ID Usuario</th>
+                  <th>ID Zona Cobertura</th>
+                  <th>Nombre Zona Cobertura</th>
+                </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in resultadoConsulta" :key="index">
-                    <td>{{ item.idUsuario }}</td>
-                    <td>{{ item.idZonaCobertura }}</td>
-                    <td>{{ item.nombreZonaCobertura }}</td>
-                  </tr>
+                <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                  <td>{{ item.idUsuario }}</td>
+                  <td>{{ item.idZonaCobertura }}</td>
+                  <td>{{ item.nombreZonaCobertura }}</td>
+                </tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- Display para la consulta 3: Lista de objetos -->
           <div v-else-if="consultaSeleccionada === '3'">
             <table class="resultado-table">
               <thead>
-                <tr>
-                  <th>Repartidor</th>
-                  <th>Mes</th>
-                  <th>Distancia (Metros)</th>
-                </tr>
+              <tr>
+                <th>Repartidor</th>
+                <th>Mes</th>
+                <th>Distancia (Metros)</th>
+              </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in resultadoConsulta" :key="index">
-                  <td>{{ item.repartidor_Nombre }} {{ item.repartidor_Apellido }}</td>
-                  <td>{{ item.mes_Entrega }}</td>
-                  <td>{{ parseFloat(item.distancia_Total_Metros).toFixed(2) }}</td>
-                </tr>
+              <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                <td>{{ item.repartidor_Nombre }} {{ item.repartidor_Apellido }}</td>
+                <td>{{ item.mes_Entrega }}</td>
+                <td>{{ parseFloat(item.distancia_Total_Metros).toFixed(2) }}</td>
+              </tr>
               </tbody>
             </table>
           </div>
@@ -161,44 +155,43 @@
           <div v-else-if="consultaSeleccionada === '4'">
             <table class="resultado-table">
               <thead>
-                <tr>
-                  <th>Farmacia</th>
-                  <th>Punto de Entrega</th>
-                  <th>Distancia (metros)</th>
-                  <th>Acciones</th>
-                </tr>
+              <tr>
+                <th>Farmacia</th>
+                <th>Punto de Entrega</th>
+                <th>Distancia (metros)</th>
+                <th>Acciones</th>
+              </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in resultadoConsulta" :key="index">
-                  <td>{{ item.farmaciaNombre }}</td>
-                  <td>{{ item.puntoEntregaNombre }}</td>
-                  <td>{{ parseFloat(item.distanciaMetros).toFixed(2) }}</td>
-                  <td>
-                    <button @click="abrirMapa(item)" class="map-button">
-                      Ver Mapa
-                    </button>
-                  </td>
-                </tr>
+              <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                <td>{{ item.farmaciaNombre }}</td>
+                <td>{{ item.puntoEntregaNombre }}</td>
+                <td>{{ parseFloat(item.distanciaMetros).toFixed(2) }}</td>
+                <td>
+                  <button @click="abrirMapa(item)" class="map-button">
+                    Ver Mapa
+                  </button>
+                </td>
+              </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Display para la consulta 5: Pedidos con rutas que cruzan múltiples zonas -->
           <div v-else-if="consultaSeleccionada === '5' && resultadoConsulta">
             <table class="resultado-table">
               <thead>
-                <tr>
-                  <th>ID Pedido</th>
-                  <th>Zonas Cruzadas</th>
-                  <th>Cantidad de Zonas</th>
-                </tr>
+              <tr>
+                <th>ID Pedido</th>
+                <th>Zonas Cruzadas</th>
+                <th>Cantidad de Zonas</th>
+              </tr>
               </thead>
               <tbody>
-                <tr v-for="(pedido, index) in resultadoConsulta" :key="index">
-                  <td>{{ pedido.pedidoId }}</td>
-                  <td>{{ pedido.zonasCruzadas }}</td>
-                  <td>{{ pedido.cantidadZonas }}</td>
-                </tr>
+              <tr v-for="(pedido, index) in resultadoConsulta" :key="index">
+                <td>{{ pedido.pedidoId }}</td>
+                <td>{{ pedido.zonasCruzadas }}</td>
+                <td>{{ pedido.cantidadZonas }}</td>
+              </tr>
               </tbody>
             </table>
           </div>
@@ -206,18 +199,23 @@
           <div v-else-if="consultaSeleccionada === '6'">
             <table class="resultado-table">
               <thead>
-                <tr>
-                  <th>ID Cliente</th>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                </tr>
+              <tr>
+                <th>ID Cliente</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Acciones</th> </tr>
               </thead>
               <tbody>
-                <tr v-for="(cliente, index) in resultadoConsulta" :key="index">
-                  <td>{{ cliente.usuarioId }}</td>
-                  <td>{{ cliente.nombre }}</td>
-                  <td>{{ cliente.email }}</td>
-                </tr>
+              <tr v-for="(cliente, index) in resultadoConsulta" :key="index">
+                <td>{{ cliente.usuarioId }}</td>
+                <td>{{ cliente.nombre }}</td>
+                <td>{{ cliente.email }}</td>
+                <td>
+                  <button @click="mostrarDetallesUsuario(cliente.usuarioId)" class="detail-button">
+                    Detalles
+                  </button>
+                </td>
+              </tr>
               </tbody>
             </table>
           </div>
@@ -266,6 +264,35 @@
       </div>
     </div>
 
+    <div v-if="mostrarModalDetalles" class="modal-overlay" @click.self="cerrarModalDetalles">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Detalles del Usuario</h3>
+          <button @click="cerrarModalDetalles" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="consultaCargando" class="loading-indicator">
+            <div class="loader"></div>
+            <span>Cargando detalles...</span>
+          </div>
+          <div v-else-if="usuarioDetalleSeleccionado">
+            <p><strong>ID:</strong> {{ usuarioDetalleSeleccionado.id }}</p>
+            <p><strong>RUT:</strong> {{ usuarioDetalleSeleccionado.rut }}</p>
+            <p><strong>Nombre:</strong> {{ usuarioDetalleSeleccionado.nombre }}</p>
+            <p><strong>Apellido:</strong> {{ usuarioDetalleSeleccionado.apellido }}</p>
+            <p><strong>Email:</strong> {{ usuarioDetalleSeleccionado.email }}</p>
+            <p><strong>Teléfono:</strong> {{ usuarioDetalleSeleccionado.telefono }}</p>
+            <p><strong>Tipo:</strong> {{ usuarioDetalleSeleccionado.tipo }}</p>
+          </div>
+          <div v-else-if="errorConsulta" class="error-message">
+            <p>{{ errorConsulta }}</p>
+          </div>
+          <div v-else>
+            <p>No se pudieron cargar los detalles del usuario.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -294,6 +321,36 @@ let map = null
 let farmaciaMarker = null
 let puntoMarker = null
 let line = null
+
+// ADICIÓN: Nuevas variables para el modal de detalles del usuario
+const mostrarModalDetalles = ref(false)
+const usuarioDetalleSeleccionado = ref(null)
+
+// ADICIÓN: Nueva función para mostrar los detalles del usuario en un modal
+const mostrarDetallesUsuario = async (usuarioId) => {
+  try {
+    errorConsulta.value = null; // Limpiar errores previos
+    consultaCargando.value = true; // Mostrar indicador de carga
+
+    const response = await api.get(`/usuarios/${usuarioId}`);
+    usuarioDetalleSeleccionado.value = response.data; // Almacenar los detalles del usuario
+    mostrarModalDetalles.value = true; // Abrir el modal
+
+  } catch (error) {
+    console.error(`Error al obtener detalles del usuario ${usuarioId}:`, error);
+    errorConsulta.value = error.response?.data?.message || 'Error al cargar los detalles del usuario.';
+    usuarioDetalleSeleccionado.value = null; // Limpiar los detalles si hay un error
+  } finally {
+    consultaCargando.value = false; // Ocultar indicador de carga
+  }
+};
+
+// ADICIÓN: Función para cerrar el modal de detalles del usuario
+const cerrarModalDetalles = () => {
+  mostrarModalDetalles.value = false;
+  usuarioDetalleSeleccionado.value = null; // Limpiar los detalles al cerrar el modal
+};
+
 
 const fetchData = async () => {
   try {
@@ -355,6 +412,11 @@ const ejecutarConsulta = async () => {
         break;
       case '6':
         response = await api.get('/clientes/lejanos-5km');
+        break;
+      case '7': // Asegúrate de que esta consulta también se maneje si necesitas mostrar el modal de detalles
+        // Por ahora, si esta consulta también devuelve una lista de usuarios, puedes usar el mismo modal de detalles
+        // Si tiene un comportamiento diferente, necesitarías otra función.
+        response = await api.get('/ruta-para-consulta-7'); // *** Reemplaza con la ruta correcta para la consulta 7 ***
         break;
       default:
         response = await api.get(`/consultas/consulta-${consultaSeleccionada.value}`);
@@ -455,20 +517,20 @@ const initMap = () => {
 
   // Añadir marcador de la farmacia
   farmaciaMarker = L.marker(
-    [puntoSeleccionado.value.farmaciaCoords.latitud, puntoSeleccionado.value.farmaciaCoords.longitud],
-    { icon: farmaciaIcon }
+      [puntoSeleccionado.value.farmaciaCoords.latitud, puntoSeleccionado.value.farmaciaCoords.longitud],
+      { icon: farmaciaIcon }
   ).addTo(map)
-    .bindPopup(`
+      .bindPopup(`
       <b>${puntoSeleccionado.value.farmaciaCoords.nombre}</b><br>
       ${puntoSeleccionado.value.farmaciaCoords.direccion}
     `);
 
   // Añadir marcador del punto de entrega
   puntoMarker = L.marker(
-    [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud],
-    { icon: puntoIcon }
+      [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud],
+      { icon: puntoIcon }
   ).addTo(map)
-    .bindPopup(`
+      .bindPopup(`
       <b>${puntoSeleccionado.value.puntoEntregaNombre}</b><br>
       Distancia: ${parseFloat(puntoSeleccionado.value.distanciaMetros).toFixed(2)} metros
     `);
@@ -1062,5 +1124,21 @@ onMounted(() => {
 
 .input-parametro button i {
   margin-right: 0.5rem;
+}
+
+/* ADICIÓN: Estilos para el botón de detalles */
+.detail-button {
+  background-color: #2196F3; /* Un azul, por ejemplo */
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+
+.detail-button:hover {
+  background-color: #1976D2;
 }
 </style>
