@@ -1,6 +1,7 @@
 package com.tbd.DeliveryMedicamentos.repositories;
 
 import com.tbd.DeliveryMedicamentos.DTO.ZonaCoberturaDTO;
+import com.tbd.DeliveryMedicamentos.DTO.ZonaUsuarioDTO;
 import com.tbd.DeliveryMedicamentos.entities.UsuarioEntity;
 import com.tbd.DeliveryMedicamentos.entities.ZonasEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,27 @@ public class UsuarioRepository {
             return conn.createQuery("SELECT * FROM Usuarios").executeAndFetch(UsuarioEntity.class);
         }
     }
+
+    public ZonaUsuarioDTO obtenerZonaDeCliente(int idCliente) {
+        String sql = """
+        SELECT 
+            u.Nombre AS nombreCliente,
+            z.nombre AS nombreZona,
+            ST_AsGeoJSON(u.geom) AS ubicacionCliente,
+            ST_AsGeoJSON(z.geom) AS poligonoZona
+        FROM Usuarios u
+        JOIN Zonas_cobertura z ON ST_Within(u.geom, z.geom)
+        WHERE u.ID = :idCliente AND u.Tipo = 'CLIENTE'
+        LIMIT 1
+    """;
+
+        try (Connection conn = sql2o.open()) {
+            return conn.createQuery(sql)
+                    .addParameter("idCliente", idCliente)
+                    .executeAndFetchFirst(ZonaUsuarioDTO.class);
+        }
+    }
+
 
     public UsuarioEntity findById(Integer id) {
         try (Connection conn = sql2o.open()) {

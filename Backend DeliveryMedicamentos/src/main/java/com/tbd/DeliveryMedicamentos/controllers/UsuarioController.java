@@ -1,6 +1,7 @@
 package com.tbd.DeliveryMedicamentos.controllers;
 
 import com.tbd.DeliveryMedicamentos.DTO.ZonaCoberturaDTO;
+import com.tbd.DeliveryMedicamentos.DTO.ZonaUsuarioDTO;
 import com.tbd.DeliveryMedicamentos.entities.UsuarioEntity;
 import com.tbd.DeliveryMedicamentos.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +27,23 @@ public class UsuarioController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @GetMapping("/zona/{id}")
+    public ResponseEntity<ZonaUsuarioDTO> getZonaCliente(@PathVariable int id) {
+        ZonaUsuarioDTO zona = usuarioService.getZonaDeCliente(id);
+        if (zona != null) {
+            return new ResponseEntity<>(zona, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @PostMapping
     public ResponseEntity<UsuarioEntity> createUsuario(@RequestBody UsuarioEntity usuario) {
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         UsuarioEntity nuevoUsuario = usuarioService.createUsuario(usuario);
         return new ResponseEntity<>(nuevoUsuario, HttpStatus.CREATED);
     }
+
 
     @GetMapping
     public ResponseEntity<List<UsuarioEntity>> getAllUsuarios() {

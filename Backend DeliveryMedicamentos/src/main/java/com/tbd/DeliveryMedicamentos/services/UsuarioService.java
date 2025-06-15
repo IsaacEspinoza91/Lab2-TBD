@@ -1,6 +1,7 @@
 package com.tbd.DeliveryMedicamentos.services;
 
 import com.tbd.DeliveryMedicamentos.DTO.ZonaCoberturaDTO;
+import com.tbd.DeliveryMedicamentos.DTO.ZonaUsuarioDTO;
 import com.tbd.DeliveryMedicamentos.entities.AdministradorEntity;
 import com.tbd.DeliveryMedicamentos.entities.ClienteEntity;
 import com.tbd.DeliveryMedicamentos.entities.RepartidorEntity;
@@ -29,6 +30,11 @@ public class UsuarioService {
     public List<UsuarioEntity> getAllUsuarios() {
         return usuarioRepository.findAll();
     }
+
+    public ZonaUsuarioDTO getZonaDeCliente(int idCliente) {
+        return usuarioRepository.obtenerZonaDeCliente(idCliente);
+    }
+
 
     public UsuarioEntity getUsuarioById(Integer id) {
         return usuarioRepository.findById(id);

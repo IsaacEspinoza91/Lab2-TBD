@@ -1,3 +1,7 @@
+------Se tiene las sentencias del LABS 1 y LABS 2---------------------------------
+
+-----------------------------------------LABS 1------------------------------------
+
 -- CONSULTAS
 -- 1. ¿Qué cliente ha gastado más dinero en pedidos entregados? [Omar]
 SELECT u.Nombre, u.Apellido, c.Usuario_ID AS Cliente_ID, SUM(p.Total_pagado) AS TotalGastado
@@ -397,9 +401,11 @@ LIMIT 10;
 
 
 
+------------------------------------------------------------------------------
+
+--------------------------------Sentecias LAB 2-------------------------------
 
 
---Sentecias LAB 2
 -- 1. (Isaac) Encontrar los 5 puntos de entrega más cercanos a una farmacia o empresa asociada.
 SELECT 
     f.ID AS farmacia_id,
@@ -455,6 +461,16 @@ SELECT DISTINCT ON (f.id) 			-- selecciona solo la primera fila de cada columna 
 FROM Farmacias f JOIN Punto_de_entrega p ON p.farmacia_id = f.id
 ORDER BY f.id, ST_DistanceSphere(f.geom, p.geom) DESC;  -- ordenamiento segun distancia mas lejana
 
+-- 5. (Omar)Listar todos los pedidos cuya ruta estimada cruce más de 2 zonas de reparto.
+SELECT 
+            p.id AS pedido_id,
+            STRING_AGG(DISTINCT z.nombre, ', ') AS zonas_cruzadas,
+            COUNT(DISTINCT z.id) AS cantidad_zonas
+        FROM pedidos p
+        JOIN zonas_cobertura z ON ST_Intersects(p.ruta_estimada, z.geom)
+        GROUP BY p.id
+        HAVING COUNT(DISTINCT z.id) > 2
+        ORDER BY cantidad_zonas DESC
 
 -- 6. (Bastian) Determinar los clientes que estan a mas de 5km de cualquier empresa o farmacia. ?Empresa?
 -- Selecciona todos los campos de la tabla 'usuarios' (u)
