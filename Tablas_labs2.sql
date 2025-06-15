@@ -387,6 +387,7 @@ LEFT JOIN farmacias_volumen_entregas_exitosas fve ON fve.farmacia = (
 )
 GROUP BY u.nombre, u.apellido, r.tipo_vehiculo, fve.total_productos_entregados, fve.total_productos_pedidos;
 
+---- cosas para Implementar una función que calcule automáticamente la zona a la que pertenece un cliente. ----
 
 CREATE TABLE Zonas_clientes (
     id SERIAL PRIMARY KEY,
@@ -423,8 +424,11 @@ AFTER INSERT ON Usuarios
 FOR EACH ROW
 EXECUTE FUNCTION asignar_zona_cliente();
 
-------APARTADO PARA RUTA ESTIMADA, SE DEBE TENER EL POBLADO DE CHILE-------
 
+
+CREATE TABLE osm_2po_4pgr(id integer, osm_id bigint, osm_name character varying, osm_meta character varying, osm_source_id bigint, osm_target_id bigint, clazz integer, flags integer, source integer, target integer, km double precision, kmh integer, cost double precision, reverse_cost double precision, x1 double precision, y1 double precision, x2 double precision, y2 double precision);
+
+------APARTADO PARA RUTA ESTIMADA, SE DEBE TENER EL POBLADO DE CHILE-------
 
 CREATE EXTENSION pgrouting;
 

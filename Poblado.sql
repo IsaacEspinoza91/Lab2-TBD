@@ -1,16 +1,16 @@
 -- Insertar datos en la tabla Usuarios (base común) - Con geometría para repartidores
 INSERT INTO Usuarios (RUT, Nombre, Apellido, Email, Password, Telefono, Tipo, geom) VALUES
--- Clientes
-('12345678-9', 'Maria', 'Gonzalez', 'maria.gonzalez@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56912345678', 'CLIENTE', NULL),
-('17654321-0', 'Pedro', 'Perez', 'pedro.perez@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56987654321', 'CLIENTE', NULL),
-('19283746-5', 'Ana', 'Ramirez', 'ana.ramirez@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56911223344', 'CLIENTE', NULL),
-('6473829-1', 'Jorge', 'Silva', 'jorge.silva@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56999887766', 'CLIENTE', NULL),
-('15374659-7', 'Laura', 'Torres', 'laura.torres@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56955667788', 'CLIENTE', NULL),
-('12839201-3', 'Diego', 'Morales', 'diego.morales@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56966778899', 'CLIENTE', NULL),
-('20213487-6', 'Camila', 'Fernandez', 'camila.fernandez@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56977889900', 'CLIENTE', NULL),
-('18820194-2', 'Ignacio', 'Vega', 'ignacio.vega@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56988990011', 'CLIENTE', NULL),
-('17928476-4', 'Valentina', 'Navarro', 'valentina.navarro@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56999001122', 'CLIENTE', NULL),
-('16029375-1', 'Matias', 'Cortes', 'matias.cortes@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56912344321', 'CLIENTE', NULL),
+-- Clientes con ubicaciones reales dentro de las zonas
+('12345678-9', 'Maria', 'Gonzalez', 'maria.gonzalez@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56912345678', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.6600, -33.4400), 4326)), -- Centro
+('17654321-0', 'Pedro', 'Perez', 'pedro.perez@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56987654321', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.6200, -33.4250), 4326)), -- Providencia
+('19283746-5', 'Ana', 'Ramirez', 'ana.ramirez@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56911223344', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.5800, -33.4100), 4326)), -- Las Condes
+('6473829-1', 'Jorge', 'Silva', 'jorge.silva@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56999887766', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.5700, -33.5100), 4326)), -- La Florida
+('15374659-7', 'Laura', 'Torres', 'laura.torres@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56955667788', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.6100, -33.4500), 4326)), -- Ñuñoa
+('12839201-3', 'Diego', 'Morales', 'diego.morales@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56966778899', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.5700, -33.3900), 4326)), -- Vitacura
+('20213487-6', 'Camila', 'Fernandez', 'camila.fernandez@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56977889900', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.6400, -33.4100), 4326)), -- Recoleta
+('18820194-2', 'Ignacio', 'Vega', 'ignacio.vega@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56988990011', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.6200, -33.4800), 4326)), -- Macul
+('17928476-4', 'Valentina', 'Navarro', 'valentina.navarro@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56999001122', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.6700, -33.4350), 4326)), -- Centro
+('16029375-1', 'Matias', 'Cortes', 'matias.cortes@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56912344321', 'CLIENTE', ST_SetSRID(ST_MakePoint(-70.5900, -33.4300), 4326)), -- Providencia
 -- Repartidores (con geometría)
 ('11223344-5', 'Carlos', 'Diaz', 'carlos.diaz@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56911112222', 'REPARTIDOR', ST_SetSRID(ST_MakePoint(-70.6500, -33.4500), 4326)),
 ('22334455-6', 'Francisca', 'Soto', 'francisca.soto@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56922223333', 'REPARTIDOR', ST_SetSRID(ST_MakePoint(-70.6000, -33.4300), 4326)),
@@ -18,8 +18,8 @@ INSERT INTO Usuarios (RUT, Nombre, Apellido, Email, Password, Telefono, Tipo, ge
 ('19556677-8', 'Paula', 'Reyes', 'paula.reyes@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56944445555', 'REPARTIDOR', ST_SetSRID(ST_MakePoint(-70.5900, -33.5200), 4326)),
 ('18667788-9', 'Tomas', 'Fuentes', 'tomas.fuentes@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56955556666', 'REPARTIDOR', ST_SetSRID(ST_MakePoint(-70.5800, -33.4100), 4326)),
 -- Administradores
-('19887766-5', 'Jorge', 'Gonzalez', 'sali.con.tu.mujer@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56912345678', 'ADMIN', NULL),
-('18776655-4', 'Claudio', 'Narea', 'claudio.n@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56998765432', 'ADMIN', NULL);
+('19887766-5', 'Jorge', 'Gonzalez', 'sali.con.tu.mujer@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56912345678', 'ADMIN', ST_SetSRID(ST_MakePoint(-70.5800, -33.3100), 4326)),
+('18776655-4', 'Claudio', 'Narea', 'claudio.n@gmail.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy...', '+56998765432', 'ADMIN', ST_SetSRID(ST_MakePoint(-70.5900, -33.3300), 4326));
 
 -- Insertar datos específicos de Clientes
 INSERT INTO Clientes (Usuario_ID, Direccion) VALUES
@@ -89,48 +89,28 @@ INSERT INTO Productos (Nombre, Precio, Stock, Requiere_receta) VALUES
 ('Miconazol', 8800, 70, false),
 ('Paroxetina', 24000, 40, true);
 
--- Insertar datos en la tabla Pedidos con rutas estimadas
-INSERT INTO Pedidos (Fecha, Urgencia, Total_pagado, Estado_entrega, Fecha_entrega, Cliente_ID, Medio_pago_ID, Farmacia_ID, Repartidor_ID, ruta_estimada) VALUES
-('2025-04-01', false, 21200, 'Entregado', '2025-04-03', 1, 1, 1, 11, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6223, -33.4378), ST_MakePoint(-70.6682, -33.4569)), 4326)),
-('2025-04-02', true, 44000, 'Pendiente', NULL, 2, 2, 2, 12, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5756, -33.4089), ST_MakePoint(-70.6345, -33.4372)), 4326)),
-('2025-04-03', false, 6400, 'Entregado', '2025-04-04', 3, 1, 3, 13, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5932, -33.5227), ST_MakePoint(-70.5698, -33.4175)), 4326)),
-('2025-04-03', true, 38880, 'Pendiente', NULL, 4, 2, 4, 14, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5793, -33.4102), ST_MakePoint(-70.5932, -33.5227)), 4326)),
-('2025-04-04', false, 9600, 'Entregado', '2025-04-06', 5, 1, 5, 15, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6502, -33.4378), ST_MakePoint(-70.6005, -33.4548)), 4326)),
-('2025-04-05', true, 32000, 'Pendiente', NULL, 6, 2, 6, 11, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6005, -33.4250), ST_MakePoint(-70.5793, -33.4102)), 4326)),
-('2025-04-06', false, 8800, 'Entregado', '2025-04-08', 7, 1, 1, 12, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6223, -33.4378), ST_MakePoint(-70.6423, -33.4189)), 4326)),
-('2025-04-06', true, 25200, 'Pendiente', NULL, 8, 2, 2, 13, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5756, -33.4089), ST_MakePoint(-70.6123, -33.4865)), 4326)),
-('2025-04-07', false, 7200, 'Entregado', '2025-04-09', 9, 1, 3, 14, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5932, -33.5227), ST_MakePoint(-70.6502, -33.4378)), 4326)),
-('2025-04-07', true, 22400, 'Pendiente', NULL, 10, 2, 4, 15, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5793, -33.4102), ST_MakePoint(-70.5756, -33.3934)), 4326)),
-('2025-04-08', false, 12800, 'Entregado', '2025-04-10', 1, 1, 5, 11, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6502, -33.4378), ST_MakePoint(-70.6682, -33.4569)), 4326)),
-('2025-04-08', true, 17600, 'Pendiente', NULL, 2, 2, 6, 12, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6005, -33.4250), ST_MakePoint(-70.6345, -33.4372)), 4326)),
-('2025-04-09', false, 24900, 'Entregado', '2025-04-11', 3, 1, 1, 13, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6223, -33.4378), ST_MakePoint(-70.5698, -33.4175)), 4326)),
-('2025-04-09', true, 10200, 'Pendiente', NULL, 4, 2, 2, 14, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5756, -33.4089), ST_MakePoint(-70.5932, -33.5227)), 4326)),
-('2025-04-10', false, 15600, 'Entregado', '2025-04-12', 5, 1, 3, 15, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5932, -33.5227), ST_MakePoint(-70.6005, -33.4548)), 4326)),
-('2025-04-11', true, 23800, 'Pendiente', NULL, 6, 2, 4, 11, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5793, -33.4102), ST_MakePoint(-70.5793, -33.4102)), 4326)),
-('2025-04-11', false, 28000, 'Entregado', '2025-04-13', 7, 1, 5, 12, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6502, -33.4378), ST_MakePoint(-70.6423, -33.4189)), 4326)),
-('2025-04-12', true, 6000, 'Pendiente', NULL, 8, 2, 6, 13, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6005, -33.4250), ST_MakePoint(-70.6123, -33.4865)), 4326)),
-('2025-04-13', false, 9800, 'Entregado', '2025-04-15', 9, 1, 1, 14, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.6223, -33.4378), ST_MakePoint(-70.6502, -33.4378)), 4326)),
-('2025-04-13', true, 15000, 'Pendiente', NULL, 10, 2, 2, 15, 
-  ST_SetSRID(ST_MakeLine(ST_MakePoint(-70.5756, -33.4089), ST_MakePoint(-70.5756, -33.3934)), 4326));
+-- Insertar datos en la tabla Pedidos (las rutas serán calculadas por trigger)
+INSERT INTO Pedidos (Fecha, Urgencia, Total_pagado, Estado_entrega, Fecha_entrega, Cliente_ID, Medio_pago_ID, Farmacia_ID, Repartidor_ID) VALUES
+('2025-04-01', false, 21200, 'Entregado', '2025-04-03', 1, 1, 1, 11),
+('2025-04-02', true, 44000, 'Pendiente', NULL, 2, 2, 2, 12),
+('2025-04-03', false, 6400, 'Entregado', '2025-04-04', 3, 1, 3, 13),
+('2025-04-03', true, 38880, 'Pendiente', NULL, 4, 2, 4, 14),
+('2025-04-04', false, 9600, 'Entregado', '2025-04-06', 5, 1, 5, 15),
+('2025-04-05', true, 32000, 'Pendiente', NULL, 6, 2, 6, 11),
+('2025-04-06', false, 8800, 'Entregado', '2025-04-08', 7, 1, 1, 12),
+('2025-04-06', true, 25200, 'Pendiente', NULL, 8, 2, 2, 13),
+('2025-04-07', false, 7200, 'Entregado', '2025-04-09', 9, 1, 3, 14),
+('2025-04-07', true, 22400, 'Pendiente', NULL, 10, 2, 4, 15),
+('2025-04-08', false, 12800, 'Entregado', '2025-04-10', 1, 1, 5, 11),
+('2025-04-08', true, 17600, 'Pendiente', NULL, 2, 2, 6, 12),
+('2025-04-09', false, 24900, 'Entregado', '2025-04-11', 3, 1, 1, 13),
+('2025-04-09', true, 10200, 'Pendiente', NULL, 4, 2, 2, 14),
+('2025-04-10', false, 15600, 'Entregado', '2025-04-12', 5, 1, 3, 15),
+('2025-04-11', true, 23800, 'Pendiente', NULL, 6, 2, 4, 11),
+('2025-04-11', false, 28000, 'Entregado', '2025-04-13', 7, 1, 5, 12),
+('2025-04-12', true, 6000, 'Pendiente', NULL, 8, 2, 6, 13),
+('2025-04-13', false, 9800, 'Entregado', '2025-04-15', 9, 1, 1, 14),
+('2025-04-13', true, 15000, 'Pendiente', NULL, 10, 2, 2, 15);
 
 -- Insertar datos para detalle de pedidos
 INSERT INTO Detalle_de_pedidos (Pedido_ID, Producto_ID, Cantidad) VALUES
