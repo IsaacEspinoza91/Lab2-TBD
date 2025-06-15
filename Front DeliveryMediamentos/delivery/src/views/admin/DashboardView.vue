@@ -43,16 +43,34 @@
     <div class="consultas-section">
       <h2>Consultas del Sistema</h2>
       <div class="consulta-selector">
-        <select v-model="consultaSeleccionada" @change="ejecutarConsulta" class="consulta-dropdown">
+        <select v-model="consultaSeleccionada" @change="manejarCambioConsulta" class="consulta-dropdown">
           <option value="" disabled selected>Seleccione una consulta...</option>
-          <option value="1">Consulta N°1: Encontrar los 5 puntos de entrega más cercanos a una farmacia o empresa asociada.</option>
-          <option value="2">Consulta N°2: Determinar si un cliente se encuentra dentro de una zona de cobertura.</option>
-          <option value="3">Consulta N°3: Calcular la distancia total recorrida por un repartidor en el último mes.</option>
-          <option value="4">Consulta N°4: Identificar el punto de entrega más lejano desde cada empresa farmacia.</option>
-          <option value="5">Consulta N°5: Listar todos los pedidos cuya ruta estimada cruce más de 2 zonas de reparto.</option>
-          <option value="6">Consulta N°6: Determinar los clientes que están a más de 5km de cualquier empresa o farmacia.</option>
+          <option value="1">Consulta N°1: Encontrar los 5 puntos de entrega más cercanos a una farmacia o empresa
+            asociada.</option>
+          <option value="2">Consulta N°2: Determinar si un cliente se encuentra dentro de una zona de cobertura.
+          </option>
+          <option value="3">Consulta N°3: Calcular la distancia total recorrida por un repartidor en el último mes.
+          </option>
+          <option value="4">Consulta N°4: Identificar el punto de entrega más lejano desde cada empresa farmacia.
+          </option>
+          <option value="5">Consulta N°5: Listar todos los pedidos cuya ruta estimada cruce más de 2 zonas de reparto.
+          </option>
+          <option value="6">Consulta N°6: Determinar los clientes que están a más de 5km de cualquier empresa o
+            farmacia.</option>
+          <option value="7">Función Extra: Calcular la zona a la que pertenece un cliente.
+          </option>
         </select>
-        
+
+        <!-- Mostrar campo de entrada solo para consulta 2 -->
+        <div v-if="consultaSeleccionada === '2'" class="input-parametro">
+          <label for="clienteId">ID del Cliente:</label>
+          <input id="clienteId" type="text" v-model="parametroConsulta" placeholder="Ingrese el ID del cliente"
+            class="input-cliente-id" />
+          <button @click="ejecutarConsulta2" class="btn-buscar" :disabled="!parametroConsulta || consultaCargando">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
+
         <div v-if="consultaCargando" class="loading-indicator">
           <div class="loader"></div>
           <span>Ejecutando consulta...</span>
@@ -63,12 +81,13 @@
 
           <!-- Consulta 1: Puntos más cercanos -->
           <div v-if="consultaSeleccionada === '1'" class="consulta-1-container">
-            <div class="farmacia-group" v-for="(grupo, farmaciaId) in agruparPorFarmacia(resultadoConsulta)" :key="farmaciaId">
+            <div class="farmacia-group" v-for="(grupo, farmaciaId) in agruparPorFarmacia(resultadoConsulta)"
+              :key="farmaciaId">
               <div class="farmacia-header">
                 <h4>{{ grupo.farmaciaNombre }}</h4>
                 <span class="badge">{{ grupo.puntos.length }} puntos cercanos</span>
               </div>
-              
+
               <table class="resultado-table">
                 <thead>
                   <tr>
@@ -95,54 +114,45 @@
           </div>
 
           <!-- Elementps de consulta 2 -->
-          <!-- Campo de entrada visible solo para la consulta 2 -->
-          <div v-if="consultaSeleccionada === '2'" class="input-parametro">
-            <label for="clienteId">ID del Cliente:</label>
-            <input
-              id="clienteId"
-              type="text"
-              v-model="parametroConsulta"
-              placeholder="Ingrese el ID del cliente"
-              class="input-cliente-id"
-            />
-          </div>
-          
-          <!-- Tabla resultados consulta 2 -->
-          <div v-if="consultaSeleccionada === '2'">
-            <table class="resultado-table">
-              <thead>
-                <tr>
-                  <th>ID Usuario</th>
-                  <th>ID Zona Cobertura</th>
-                  <th>Nombre Zona Cobertura</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(item, index) in resultadoConsulta" :key="index">
-                  <td>{{ item.idUsuario }}</td>
-                  <td>{{ item.idZonaCobertura }}</td>
-                  <td>{{ item.nombreZonaCobertura }}</td>
-                </tr>
-              </tbody>
-            </table>
+          <div v-else-if="consultaSeleccionada === '2'">
+
+            <!-- Tabla resultados consulta 2 -->
+            <div v-if="resultadoConsulta && consultaSeleccionada === '2'">
+              <table class="resultado-table">
+                <thead>
+                  <tr>
+                    <th>ID Usuario</th>
+                    <th>ID Zona Cobertura</th>
+                    <th>Nombre Zona Cobertura</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                    <td>{{ item.idUsuario }}</td>
+                    <td>{{ item.idZonaCobertura }}</td>
+                    <td>{{ item.nombreZonaCobertura }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <!-- Display para la consulta 3: Lista de objetos -->
           <div v-else-if="consultaSeleccionada === '3'">
             <table class="resultado-table">
               <thead>
-              <tr>
-                <th>Repartidor</th>
-                <th>Mes</th>
-                <th>Distancia (Metros)</th>
-              </tr>
+                <tr>
+                  <th>Repartidor</th>
+                  <th>Mes</th>
+                  <th>Distancia (Metros)</th>
+                </tr>
               </thead>
               <tbody>
-              <tr v-for="(item, index) in resultadoConsulta" :key="index">
-                <td>{{ item.repartidor_Nombre }} {{ item.repartidor_Apellido }}</td>
-                <td>{{ item.mes_Entrega }}</td>
-                <td>{{ parseFloat(item.distancia_Total_Metros).toFixed(2) }}</td>
-              </tr>
+                <tr v-for="(item, index) in resultadoConsulta" :key="index">
+                  <td>{{ item.repartidor_Nombre }} {{ item.repartidor_Apellido }}</td>
+                  <td>{{ item.mes_Entrega }}</td>
+                  <td>{{ parseFloat(item.distancia_Total_Metros).toFixed(2) }}</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -196,18 +206,22 @@
           <div v-else-if="consultaSeleccionada === '6'">
             <table class="resultado-table">
               <thead>
-              <tr>
-                <th>ID Cliente</th>
-                <th>Nombre</th>
-                <th>Email</th> </tr>
+                <tr>
+                  <th>ID Cliente</th>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                </tr>
               </thead>
               <tbody>
-              <tr v-for="(cliente, index) in resultadoConsulta" :key="index">
-                <td>{{ cliente.usuarioId }}</td> <td>{{ cliente.nombre }}</td> <td>{{ cliente.email }}</td> </tr>
+                <tr v-for="(cliente, index) in resultadoConsulta" :key="index">
+                  <td>{{ cliente.usuarioId }}</td>
+                  <td>{{ cliente.nombre }}</td>
+                  <td>{{ cliente.email }}</td>
+                </tr>
               </tbody>
             </table>
           </div>
-          
+
           <pre v-else>{{ JSON.stringify(resultadoConsulta, null, 2) }}</pre>
         </div>
 
@@ -222,7 +236,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h3>
-            {{ puntoSeleccionado.farmaciaCoords?.nombre || 'Farmacia' }} → 
+            {{ puntoSeleccionado.farmaciaCoords?.nombre || 'Farmacia' }} →
             {{ puntoSeleccionado.puntoEntregaNombre }}
           </h3>
           <button @click="cerrarModal" class="close-button">&times;</button>
@@ -235,16 +249,16 @@
           <div id="map-container" ref="mapContainer" v-else></div>
           <div class="map-info" v-if="puntoSeleccionado.farmaciaCoords">
             <p>
-              <strong>Farmacia:</strong> 
-              {{ puntoSeleccionado.farmaciaCoords.nombre }} - 
+              <strong>Farmacia:</strong>
+              {{ puntoSeleccionado.farmaciaCoords.nombre }} -
               {{ puntoSeleccionado.farmaciaCoords.direccion }}
             </p>
             <p>
-              <strong>Punto de entrega:</strong> 
+              <strong>Punto de entrega:</strong>
               {{ puntoSeleccionado.puntoEntregaNombre }}
             </p>
             <p>
-              <strong>Distancia:</strong> 
+              <strong>Distancia:</strong>
               {{ parseFloat(puntoSeleccionado.distanciaMetros).toFixed(2) }} metros
             </p>
           </div>
@@ -303,25 +317,32 @@ const fetchData = async () => {
   }
 }
 
+const manejarCambioConsulta = () => {
+  // Limpiar resultados y errores al cambiar de consulta
+  resultadoConsulta.value = null;
+  errorConsulta.value = null;
+  parametroConsulta.value = ''; // Limpiar el parámetro al cambiar de consulta
+
+  // Si no es la consulta 2, ejecutar inmediatamente
+  if (consultaSeleccionada.value !== '2') {
+    ejecutarConsulta();
+  }
+};
+
+
 const ejecutarConsulta = async () => {
-  if (!consultaSeleccionada.value) return
+  if (!consultaSeleccionada.value) return;
 
   try {
-    consultaCargando.value = true
-    resultadoConsulta.value = null
-    errorConsulta.value = null
+    consultaCargando.value = true;
+    resultadoConsulta.value = null;
+    errorConsulta.value = null;
 
     let response;
 
-    switch(consultaSeleccionada.value) {
+    switch (consultaSeleccionada.value) {
       case '1':
         response = await api.get('/puntos/top5-cercanos');
-        break;
-      case '2':
-        if (!parametroConsulta.value) {
-          throw new Error('Debe ingresar el ID del cliente para la consulta 2.');
-        }
-        response = await api.get(`/usuarios/${parametroConsulta.value}/zonas`);
         break;
       case '3':
         response = await api.get('/repartidores/distancia-mensual');
@@ -349,12 +370,34 @@ const ejecutarConsulta = async () => {
   }
 };
 
+const ejecutarConsulta2 = async () => {
+  if (!parametroConsulta.value) {
+    errorConsulta.value = 'Debe ingresar el ID del cliente';
+    return;
+  }
+
+  try {
+    consultaCargando.value = true;
+    resultadoConsulta.value = null;
+    errorConsulta.value = null;
+
+    const response = await api.get(`/usuarios/${parametroConsulta.value}/zonas`);
+    resultadoConsulta.value = response.data;
+
+  } catch (error) {
+    console.error('Error al ejecutar consulta 2:', error);
+    errorConsulta.value = error.response?.data?.message || 'Error al buscar zonas del cliente';
+  } finally {
+    consultaCargando.value = false;
+  }
+};
+
 // Método para abrir el mapa
 const abrirMapa = async (punto) => {
   try {
     consultaCargando.value = true;
     puntoSeleccionado.value = punto;
-    
+
     // Obtener coordenadas de la farmacia
     const response = await api.get(`/farmacias/coordenadas/${punto.farmaciaId}`);
     const farmaciaCoords = {
@@ -363,10 +406,10 @@ const abrirMapa = async (punto) => {
       latitud: parseFloat(response.data.latitud),
       longitud: parseFloat(response.data.longitud)
     };
-    
+
     puntoSeleccionado.value.farmaciaCoords = farmaciaCoords;
     mostrarModal.value = true;
-    
+
     nextTick(() => {
       initMap();
     });
@@ -412,7 +455,7 @@ const initMap = () => {
 
   // Añadir marcador de la farmacia
   farmaciaMarker = L.marker(
-    [puntoSeleccionado.value.farmaciaCoords.latitud, puntoSeleccionado.value.farmaciaCoords.longitud], 
+    [puntoSeleccionado.value.farmaciaCoords.latitud, puntoSeleccionado.value.farmaciaCoords.longitud],
     { icon: farmaciaIcon }
   ).addTo(map)
     .bindPopup(`
@@ -422,7 +465,7 @@ const initMap = () => {
 
   // Añadir marcador del punto de entrega
   puntoMarker = L.marker(
-    [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud], 
+    [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud],
     { icon: puntoIcon }
   ).addTo(map)
     .bindPopup(`
@@ -434,7 +477,7 @@ const initMap = () => {
   line = L.polyline([
     [puntoSeleccionado.value.farmaciaCoords.latitud, puntoSeleccionado.value.farmaciaCoords.longitud],
     [puntoSeleccionado.value.latitud, puntoSeleccionado.value.longitud]
-  ], { 
+  ], {
     color: '#1a237e',
     weight: 3,
     dashArray: '5, 5',
@@ -471,7 +514,7 @@ const cerrarModal = () => {
 
 const agruparPorFarmacia = (data) => {
   const grupos = {};
-  
+
   data.forEach(item => {
     if (!grupos[item.farmaciaId]) {
       grupos[item.farmaciaId] = {
@@ -479,7 +522,7 @@ const agruparPorFarmacia = (data) => {
         puntos: []
       };
     }
-    
+
     // Solo agregar si no hemos alcanzado el límite de 5 por farmacia
     if (grupos[item.farmaciaId].puntos.length < 5) {
       grupos[item.farmaciaId].puntos.push({
@@ -489,7 +532,7 @@ const agruparPorFarmacia = (data) => {
       });
     }
   });
-  
+
   return grupos;
 };
 
@@ -568,8 +611,10 @@ onMounted(() => {
   padding: 1.5rem;
   background-color: #f5f5f5;
   border-radius: 8px;
-  max-height: 80vh;  /* Aumentamos la altura máxima */
-  min-height: 300px; /* Altura mínima para que no se vea muy pequeño */
+  max-height: 80vh;
+  /* Aumentamos la altura máxima */
+  min-height: 300px;
+  /* Altura mínima para que no se vea muy pequeño */
   overflow-y: auto;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
@@ -711,7 +756,8 @@ onMounted(() => {
 }
 
 #map-container {
-  height: 550px; /* Más alto */
+  height: 550px;
+  /* Más alto */
   width: 100%;
   border-radius: 6px;
   border: 1px solid #ddd;
@@ -802,7 +848,8 @@ onMounted(() => {
   gap: 1.5rem;
   max-height: 65vh;
   overflow-y: auto;
-  padding-right: 0.5rem; /* Espacio para el scroll */
+  padding-right: 0.5rem;
+  /* Espacio para el scroll */
 }
 
 .farmacia-group {
@@ -921,8 +968,13 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .resultado-table {
@@ -931,7 +983,8 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-.resultado-table th, .resultado-table td {
+.resultado-table th,
+.resultado-table td {
   border: 1px solid #7c7c7c;
   padding: 8px;
   text-align: left;
@@ -956,24 +1009,58 @@ onMounted(() => {
   text-align: center;
 }
 
-/* input parametro consulta 2 */
 .input-parametro {
-  margin-top: 1rem;
+  margin: 1.5rem 0;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+  max-width: 500px;
 }
 
 .input-parametro label {
-  margin-bottom: 0.25rem;
   font-weight: 600;
+  color: #555;
+  margin-bottom: 0.25rem;
 }
 
-.consulta-input {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
+.input-cliente-id {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
   width: 100%;
-  max-width: 300px;
+  margin-bottom: 0.5rem;
+}
+
+.input-cliente-id:focus {
+  outline: none;
+  border-color: #1a237e;
+  box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.2);
+}
+
+/* Estilo para el botón de búsqueda */
+.input-parametro button {
+  align-self: flex-start;
+  padding: 0.75rem 1.5rem;
+  background-color: #1a237e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.input-parametro button:hover {
+  background-color: #303f9f;
+}
+
+.input-parametro button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.input-parametro button i {
+  margin-right: 0.5rem;
 }
 </style>

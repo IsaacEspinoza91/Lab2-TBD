@@ -132,7 +132,9 @@ public class UsuarioRepository {
 
     public List<ZonaCoberturaDTO> obtenerZonasPorUsuario(int usuarioId) {
         String sql = """
-        SELECT u.id,z.id, z.nombre
+        SELECT u.id as idUsuario,
+               z.id as idZonaCobertura, 
+               z.nombre as nombreZonaCobertura
         FROM zonas_cobertura z
         JOIN usuarios u ON u.id = :usuarioId
         WHERE ST_Intersects(z.geom, u.geom)

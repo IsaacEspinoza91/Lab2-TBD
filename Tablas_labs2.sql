@@ -195,7 +195,7 @@ BEGIN
 END;
 $$;
 -- Ejemplo llamada, muestra tabla con resultadod de ejecuion
-CALL cambiar_estado_pedido(2,'Fallido');
+-- CALL cambiar_estado_pedido(2,'Fallido');
 
 
 -- 9. Descontar stock al confirmar pedido. [Williams]
@@ -379,60 +379,3 @@ LEFT JOIN farmacias_volumen_entregas_exitosas fve ON fve.farmacia = (
     LIMIT 1
 )
 GROUP BY u.nombre, u.apellido, r.tipo_vehiculo, fve.total_productos_entregados, fve.total_productos_pedidos;
-
-
--- Extra
--- Ranking de productos devultos
-SELECT 
-    p.ID AS producto_id,
-    p.Nombre AS nombre_producto,
-    COUNT(dp.ID) AS veces_devuelto,
-    CONCAT(
-        ROUND(
-            COUNT(dp.ID) * 100.0 / 
-            NULLIF(SUM(COUNT(dp.ID)) OVER (), 0), -- Evita división por cero
-            2
-        ), 
-        '%'
-    ) AS porcentaje_devoluciones
-FROM 
-    Productos p
-JOIN 
-    Detalle_de_pedidos dp ON p.ID = dp.Producto_ID
-JOIN 
-    Pedidos ped ON dp.Pedido_ID = ped.ID
-WHERE 
-    ped.Estado_entrega = 'Devuelto'
-GROUP BY 
-    p.ID, p.Nombre
-ORDER BY 
-    veces_devuelto DESC
-LIMIT 10;
-
-
--- Ranking de productos cancelados
-SELECT 
-    p.ID AS producto_id,
-    p.Nombre AS nombre_producto,
-    COUNT(dp.ID) AS veces_cancelado,
-    CONCAT(
-        ROUND(
-            COUNT(dp.ID) * 100.0 / 
-            NULLIF(SUM(COUNT(dp.ID)) OVER (), 0), -- Evita división por cero
-            2
-        ), 
-        '%'
-    ) AS porcentaje_cancelaciones
-FROM 
-    Productos p
-JOIN 
-    Detalle_de_pedidos dp ON p.ID = dp.Producto_ID
-JOIN 
-    Pedidos ped ON dp.Pedido_ID = ped.ID
-WHERE 
-    ped.Estado_entrega = 'Cancelado'
-GROUP BY 
-    p.ID, p.Nombre
-ORDER BY 
-    veces_cancelado DESC
-LIMIT 10;
