@@ -58,28 +58,22 @@ Antes de arrancar el backend y frontend, crea y estructura la base de datos sigu
    CREATE EXTENSION postgis;
    ```
 
-2. **Cargar datos georeferenciales (Chile)**  
+2 **Cargar datos georeferenciales (Chile)**  
    Descarga el archivo desde Google Drive:  
-   https://drive.google.com/file/d/1HiM09HpVrqF_bcZF4D3BC1_SyRPVzC9t/view?usp=sharing  
-   (nombre: `osm_2po_4pgr.sql`)  
+   https://drive.google.com/file/d/1wmatr37a0w9cX5W6xFGHiVvmoNy7RLsE/view?usp=sharing
+   (nombre: `Laboratorio_2_Geom_TDB_GRUPO1`)  
+   
+3.1 **OPCION 1 por comandos**
    Luego ejecuta:
    ```bash
-   psql -U <tu_usuario> -d delivery_medicamentos -f osm_2po_4pgr.sql
+   psql -U <tu_usuario> -d delivery_medicamentos -f Laboratorio_2_Geom_TDB_GRUPO1.sql
    ```
 
-3. **Crear la estructura de tablas**  
-   Ejecuta el script de definición de tablas:
-   ```bash
-   psql -U <tu_usuario> -d delivery_medicamentos -f Tablas_labs2.sql
-   ```
+3.2 **OPCION 2 por pgAdmin4**
+   Cargar dentro de la base de datos delivery_medicamentos, el archivo Laboratorio_2_Geom_TDB_GRUPO1 y ejecutarlo
 
-4. **Poblar datos iniciales**  
-   Carga el script de datos de prueba:
-   ```bash
-   psql -U <tu_usuario> -d delivery_medicamentos -f Poblado.sql
-   ```
+   Nota: tarda al rededor 2 a 5 minutos cargar todo
 
----
 
 ## ⚙️ Requisitos de Puertos
 
