@@ -79,54 +79,57 @@
       <div v-if="showModal" class="modal-overlay">
         <div class="modal-content">
           <h3>{{ isEditing ? 'Editar Pedido' : 'Nuevo Pedido' }}</h3>
-          <form @submit.prevent="isEditing ? updatePedido() : createPedido()">
-            <div class="form-group">
-              <label>Fecha:</label>
-              <input v-model="form.fecha" type="date" required />
-            </div>
-            <div class="form-group">
-              <label>Urgencia:</label>
-              <input v-model="form.urgencia" type="checkbox" />
-            </div>
-            <div class="form-group">
-              <label>Total Pagado:</label>
-              <input v-model="form.total_pagado" type="number" required />
-            </div>
-            <div class="form-group">
-              <label>Estado de Entrega:</label>
-              <input v-model="form.estado_entrega" type="text" required />
-            </div>
-            <div class="form-group">
-              <label>Fecha de Entrega:</label>
-              <input v-model="form.fecha_entrega" type="date" required />
-            </div>
-            <div class="form-group">
-              <label>Cliente ID:</label>
-              <input v-model="form.cliente_id" type="number" required />
-            </div>
-            <div class="form-group">
-              <label>Medio de Pago ID:</label>
-              <input v-model="form.medio_pago_id" type="number" required />
-            </div>
-            <div class="form-group">
-              <label>Farmacia ID:</label>
-              <input v-model="form.farmacia_id" type="number" required />
-            </div>
-            <div class="form-group">
-              <label>Repartidor ID:</label>
-              <input v-model="form.repartidor_id" type="number" required />
-            </div>
-            <div class="form-group">
-              <label>Ruta Estimada:</label>
-              <textarea v-model="form.rutaEstimada" rows="3" placeholder="Ej: LINESTRING(-70.6 -33.4, -70.7 -33.5)"></textarea>
-            </div>
-            <div class="modal-actions">
-              <button type="button" @click="closeModal" class="cancel-button">Cancelar</button>
-              <button type="submit" class="save-button">{{
-                isEditing ? 'Actualizar' : 'Guardar'
-              }}</button>
-            </div>
-          </form>
+          <div class="modal-scroll-container">
+            <form @submit.prevent="isEditing ? updatePedido() : createPedido()">
+              <div class="form-group">
+                <label>Fecha:</label>
+                <input v-model="form.fecha" type="date" required />
+              </div>
+              <div class="form-group">
+                <label>Urgencia:</label>
+                <input v-model="form.urgencia" type="checkbox" />
+              </div>
+              <div class="form-group">
+                <label>Total Pagado:</label>
+                <input v-model="form.total_pagado" type="number" min="0" step="0.01" required />
+              </div>
+              <div class="form-group">
+                <label>Estado de Entrega:</label>
+                <select v-model="form.estado_entrega" required>
+                  <option value="">Seleccione estado</option>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Demorado">Demorado</option>
+                  <option value="Entregado">Entregado</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Fecha de Entrega:</label>
+                <input v-model="form.fecha_entrega" type="date" required />
+              </div>
+              <div class="form-group">
+                <label>Cliente ID:</label>
+                <input v-model="form.cliente_id" type="number" min="1" required />
+              </div>
+              <div class="form-group">
+                <label>Medio de Pago ID:</label>
+                <input v-model="form.medio_pago_id" type="number" min="1" required />
+              </div>
+              <div class="form-group">
+                <label>Farmacia ID:</label>
+                <input v-model="form.farmacia_id" type="number" min="1" required />
+              </div>
+              <div class="form-group">
+                <label>Repartidor ID:</label>
+                <input v-model="form.repartidor_id" type="number" min="1" required />
+              </div>
+              <div class="modal-actions">
+                <button type="button" @click="closeModal" class="cancel-button">Cancelar</button>
+                <button type="submit" class="save-button">
+                  {{ isEditing ? 'Actualizar' : 'Guardar' }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -274,14 +277,13 @@ const currentPedidoId = ref(null)
 const form = ref({
   fecha: '',
   urgencia: false,
-  total_pagado: '',
+  total_pagado: 0,
   estado_entrega: '',
   fecha_entrega: '',
   cliente_id: '',
   medio_pago_id: '',
   farmacia_id: '',
-  repartidor_id: '',
-  rutaEstimada: null,
+  repartidor_id: ''
 })
 
 const medioPagoUrgenteData = ref(null)
@@ -403,14 +405,31 @@ const fetchPedidos = async () => {
 // Crear pedido
 const createPedido = async () => {
   try {
-    await api.post('/pedidos', form.value)
-    await fetchPedidos()
-    closeModal()
-    alert('Pedido creado exitosamente')
-  }
-  catch (error) {
+    // Preparar los datos para enviar
+    const pedidoData = {
+      fecha: form.value.fecha,
+      urgencia: Boolean(form.value.urgencia),
+      total_pagado: Number(form.value.total_pagado),
+      estado_entrega: form.value.estado_entrega,
+      fecha_entrega: form.value.fecha_entrega,
+      cliente_id: Number(form.value.cliente_id),
+      medio_pago_id: Number(form.value.medio_pago_id),
+      farmacia_id: Number(form.value.farmacia_id),
+      repartidor_id: Number(form.value.repartidor_id)
+    }
+
+    const response = await api.post('/pedidos', pedidoData)
+    
+    if (response.status === 201) {
+      await fetchPedidos()
+      closeModal()
+      alert('Pedido creado exitosamente')
+    } else {
+      throw new Error('Error al crear pedido')
+    }
+  } catch (error) {
     console.error('Error al crear pedido:', error)
-    alert('Error al crear pedido')
+    alert(`Error al crear pedido: ${error.message}`)
   }
 }
 
@@ -437,13 +456,30 @@ const editPedido = (pedido) => {
 // Actualizar pedido
 const updatePedido = async () => {
   try {
-    await api.put(`/pedidos/${currentPedidoId.value}`, form.value)
-    await fetchPedidos()
-    closeModal()
-    alert('Pedido actualizado exitosamente')
+    const pedidoData = {
+      fecha: form.value.fecha,
+      urgencia: Boolean(form.value.urgencia),
+      total_pagado: Number(form.value.total_pagado),
+      estado_entrega: form.value.estado_entrega,
+      fecha_entrega: form.value.fecha_entrega,
+      cliente_id: Number(form.value.cliente_id),
+      medio_pago_id: Number(form.value.medio_pago_id),
+      farmacia_id: Number(form.value.farmacia_id),
+      repartidor_id: Number(form.value.repartidor_id)
+    }
+
+    const response = await api.put(`/pedidos/${currentPedidoId.value}`, pedidoData)
+    
+    if (response.status === 200) {
+      await fetchPedidos()
+      closeModal()
+      alert('Pedido actualizado exitosamente')
+    } else {
+      throw new Error('Error al actualizar pedido')
+    }
   } catch (error) {
     console.error('Error al actualizar pedido:', error)
-    alert('Error al actualizar pedido')
+    alert(`Error al actualizar pedido: ${error.message}`)
   }
 }
 
@@ -759,7 +795,11 @@ onMounted(async () => {
   border-radius: 8px;
   width: 100%;
   max-width: 600px;
+  max-height: 90vh; /* Limita la altura máxima al 90% del viewport */
+  display: flex;
+  flex-direction: column;
 }
+
 
 /* Estilos específicos para el modal de mapa */
 .map-modal-content {
@@ -847,6 +887,21 @@ onMounted(async () => {
 
 .form-group input[type="checkbox"] {
   margin-right: 8px;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 0.9em;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .modal-actions {
@@ -1040,4 +1095,31 @@ onMounted(async () => {
 .view-route-button:hover {
   background-color: #0056b3;
 }
+
+.modal-scroll-container {
+  overflow-y: auto; /* Habilita el scroll vertical cuando sea necesario */
+  padding-right: 10px; /* Evita que el contenido se pegue al scrollbar */
+  margin-right: -10px; /* Compensa el padding-right */
+  flex-grow: 1; /* Ocupa todo el espacio disponible */
+}
+
+/* Estilos para el scrollbar (opcional) */
+.modal-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-scroll-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.modal-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 </style>

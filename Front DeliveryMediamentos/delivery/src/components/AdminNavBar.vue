@@ -1,6 +1,6 @@
 <template>
     <nav class="admin-navbar">
-        <router-link to="/admin" class="navbar-brand">Delivery Medicamentos</router-link>
+        <router-link to="/admin" class="nav-link">Delivery Medicamentos</router-link>
         <div class="admin-nav-links">
             <router-link to="/admin/usuarios" class="nav-link">Usuarios</router-link>
             <router-link to="/admin/clientes" class="nav-link">Clientes</router-link>
