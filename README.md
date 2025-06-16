@@ -47,7 +47,7 @@ o crea la base de datos `delivery_medicamentos` por medio de la interfaz de pgAd
 
 Descarga el archivo desde Google Drive:
 
-🔗 [Laboratorio\_2\_Geom\_TDB\_GRUPO1.sql](https://drive.google.com/file/d/1QqXw2acy3fBd7B_ro-uRIxxEBRHVcpeh/view?usp=sharing)
+🔗 [Laboratorio\_2\_Geom\_TDB\_GRUPO1.sql](https://drive.google.com/file/d/1f-dBOcfms8si1tOwB9Hdn0xI0Y_1RPIt/view?usp=sharing)
 
 ---
 
