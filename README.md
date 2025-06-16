@@ -25,27 +25,6 @@
 
 ---
 
-## 🚀 Cómo Ejecutar el Proyecto
-
-1. **Clonar repositorio**  
-   ```bash
-   git clone https://github.com/IsaacEspinoza91/Lab2-TBD.git
-   cd Lab2-TBD
-   ```
-
-2. **Configurar y ejecutar el Backend**  
-   - Abrir la carpeta "Backend DeliveryMediamentos" desde un IDE y ejecutar 
-   > ⚠️ El backend arranca en el puerto **8080** por defecto.
-
-3. **Ejecutar el Frontend**  
-   ```bash
-   cd 'Front DeliveryMedicamentos/delivery'
-   npm install
-   npm run dev
-   ```  
-   Abre en tu navegador: [http://localhost:5173](http://localhost:5173)
-
-
 # 📂 Configurar la Base de Datos
 
 Antes de iniciar el backend y frontend, sigue estos pasos para crear y poblar la base de datos.
@@ -68,7 +47,7 @@ o crea la base de datos `delivery_medicamentos` por medio de la interfaz de pgAd
 
 Descarga el archivo desde Google Drive:
 
-🔗 [Laboratorio\_2\_Geom\_TDB\_GRUPO1.sql](https://drive.google.com/file/d/1X0q5A8TwltZsyX11teiR13AWKxqqYtzn/view?usp=sharing)
+🔗 [Laboratorio\_2\_Geom\_TDB\_GRUPO1.sql](https://drive.google.com/file/d/1_TtoRiVtnbbjbwdEtkegawb1FZJz0Iiy/view?usp=sharing)
 
 ---
 
@@ -90,6 +69,28 @@ psql -U <tu_usuario> -d delivery_medicamentos -f Laboratorio_2_Geom_TDB_GRUPO1.s
 
 ---
 
+## 🚀 Cómo Ejecutar el Proyecto
+
+1. **Clonar repositorio**  
+   ```bash
+   git clone https://github.com/IsaacEspinoza91/Lab2-TBD.git
+   cd Lab2-TBD
+   ```
+
+2. **Configurar y ejecutar el Backend**  
+   - Abrir la carpeta "Backend DeliveryMediamentos" desde un IDE y ejecutar 
+   > ⚠️ El backend arranca en el puerto **8080** por defecto.
+
+3. **Ejecutar el Frontend**  
+   ```bash
+   cd 'Front DeliveryMedicamentos/delivery'
+   npm install
+   npm run dev
+   ```  
+   Abre en tu navegador: [http://localhost:5173](http://localhost:5173)
+
+---
+
 ## ⚙️ Requisitos de Puertos
 
 | Servicio | Puerto |
@@ -102,4 +103,3 @@ Asegúrate de que estos puertos estén **libres** antes de iniciar.
 ---
 
 
----
