@@ -2,9 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 // Vistas principales
-const HomeView = () => import('@/views/HomeView.vue')
-const LoginView = () => import('@/views/LoginView.vue')
-const RegisterView = () => import('@/views/RegisterView.vue')
+const HomeView2 = () => import('@/views/HomeView2.vue')
+const LoginView2 = () => import('@/views/Auth/LoginView.vue')
+const RegisterView2 = () => import('@/views/Auth/RegisterView.vue')
 
 // Vistas de administración
 const AdminView = () => import('@/views/AdminView.vue')
@@ -18,9 +18,7 @@ const ProductosView = () => import('@/views/admin/ProductosView.vue')
 const CalificacionesView = () => import('@/views/admin/CalificacionesView.vue')
 
 //vistas usando login de control 2
-const HomeView2 = () => import('@/views/HomeView2.vue')
-const LoginView2 = () => import('@/views/Auth/LoginView.vue')
-const RegisterView2 = () => import('@/views/Auth/RegisterView.vue')
+
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,16 +27,6 @@ const router = createRouter({
             path: '/',
             name: 'home',
             component: HomeView2
-        },
-        {
-            path: '/login',
-            name: 'login',
-            component: LoginView
-        },
-        {
-            path: '/register',
-            name: 'register',
-            component: RegisterView
         },
         {
             path: '/home2',

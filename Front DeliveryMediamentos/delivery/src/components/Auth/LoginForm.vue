@@ -40,7 +40,7 @@
             </form>
 
             <div class="auth-footer">
-                <router-link to="/register" class="auth-link">
+                <router-link to="/register2" class="auth-link">
                     <i class="bi bi-person-plus me-1"></i>
                     ¿No tienes cuenta? Registrarse
                 </router-link>

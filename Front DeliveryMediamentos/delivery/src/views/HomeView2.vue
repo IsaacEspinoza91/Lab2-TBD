@@ -32,11 +32,11 @@
                         completo de sus el delivery de medicamentos de diferentes farmacias.
                     </p>
                     <ul class="features-list">
-                        <li><i class="bi bi-check-circle"></i> Filtro y búsqueda</li>
-                        <li><i class="bi bi-check-circle"></i> Organización</li>
-                        <li><i class="bi bi-check-circle"></i> Noti</li>
-                        <li><i class="bi bi-check-circle"></i> Panel central</li>
-                        <li><i class="bi bi-check-circle"></i> Historial</li>
+                        <li><i class="bi bi-check-circle"></i> Búsqueda de pedidos con estado</li>
+                        <li><i class="bi bi-check-circle"></i> Rutas estimas de despacho</li>
+                        <li><i class="bi bi-check-circle"></i> Administración farmacias, productos y clientes</li>
+                        <li><i class="bi bi-check-circle"></i> Información general</li>
+                        <li><i class="bi bi-check-circle"></i> Gestión administrativa</li>
                         <li><i class="bi bi-check-circle"></i> Asociación a sectores geográficos</li>
                     </ul>
                 </div>

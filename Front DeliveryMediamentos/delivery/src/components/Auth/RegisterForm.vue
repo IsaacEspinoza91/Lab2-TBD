@@ -112,7 +112,7 @@
             </div>
 
             <div class="register-footer">
-                <router-link to="/login" class="login-link">
+                <router-link to="/login2" class="login-link">
                     <i class="bi bi-box-arrow-in-right me-1"></i>
                     ¿Ya tienes cuenta? Inicia sesión
                 </router-link>
