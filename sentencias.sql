@@ -524,4 +524,17 @@ GROUP BY
 ORDER BY
     cantidadPedidos DESC;
 
-    
+-- 3. Crear una tabla de puntos de interés cercanos (hospitales, centros logísticos, etc.) y consultarlos con ST_DWithin.
+
+SELECT 
+    pi.id, 
+    pi.nombre, 
+    pi.lugar, 
+    ST_Y(pi.geom) AS latitud, 
+    ST_X(pi.geom) AS longitud
+FROM 
+    puntos_de_interes AS pi, 
+    usuarios AS u
+WHERE 
+    u.id = 1  -- Reemplaza con el ID del usuario deseado
+    AND ST_DWithin(u.geom::geography, pi.geom::geography, 3000);  -- Distancia en metros
